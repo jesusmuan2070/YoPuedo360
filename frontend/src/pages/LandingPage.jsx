@@ -2,25 +2,9 @@
  * Landing Page - Main entry point (Duolingo-inspired)
  */
 
-import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 
 export default function LandingPage() {
-    const [currentSlide, setCurrentSlide] = useState(0);
-    const problems = [
-        { img: '/scenarios/isolated_words_problem.png', text: 'Memorizas palabras sueltas' },
-        { img: null, emoji: '', text: 'Frases que no usarías en la vida real' },
-        { img: null, emoji: '', text: 'Mismo contenido para todos' },
-        { img: null, emoji: '', text: 'Mucho estudio, poca confianza' }
-    ];
-
-    // Auto-avanzar cada 3 segundos
-    useEffect(() => {
-        const timer = setInterval(() => {
-            setCurrentSlide((prev) => (prev + 1) % problems.length);
-        }, 5000);
-        return () => clearInterval(timer);
-    }, []);
     return (
         <div className="min-h-screen bg-white">
             {/* Header */}
@@ -127,12 +111,12 @@ export default function LandingPage() {
                 </div>
             </section>
 
-            {/* Problem Section */}
+            {/* Problem Section - COMMENTED OUT FOR REVIEW */}
+            {/*
             <section className="py-16 bg-white">
                 <div className="max-w-6xl mx-auto px-6">
                     <div className="flex flex-col md:flex-row items-center gap-12">
 
-                        {/* Left: Text */}
                         <div className="flex-1">
                             <h2 className="text-4xl md:text-5xl font-bold text-gray-900 leading-tight mb-6">
                                 ¿Estudias pero
@@ -151,57 +135,27 @@ export default function LandingPage() {
                             </p>
                         </div>
 
-                        {/* Right: Auto-Carousel */}
                         <div className="flex-1">
-                            <div className="relative overflow-hidden rounded-2xl">
-                                <div
-                                    className="flex transition-transform duration-500 ease-in-out"
-                                    style={{ transform: `translateX(-${currentSlide * 100}%)` }}
-                                >
-                                    {problems.map((problem, index) => (
-                                        <div key={index} className="w-full flex-shrink-0">
-                                            <div className="rounded-2xl p-2">
-                                                <div className="w-full aspect-square bg-white rounded-xl overflow-hidden flex items-center justify-center">
-                                                    {problem.img ? (
-                                                        <img
-                                                            src={problem.img}
-                                                            alt={problem.text}
-                                                            className="w-full h-full object-cover"
-                                                        />
-                                                    ) : (
-                                                        <span className="text-7xl">{problem.emoji}</span>
-                                                    )}
-                                                </div>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-
-                                {/* Indicadores */}
-                                <div className="flex justify-center gap-2 mt-4">
-                                    {problems.map((_, index) => (
-                                        <button
-                                            key={index}
-                                            onClick={() => setCurrentSlide(index)}
-                                            className={`w-2 h-2 rounded-full transition-colors ${currentSlide === index ? 'bg-purple-600' : 'bg-gray-300'
-                                                }`}
-                                            aria-label={`Ir a slide ${index + 1}`}
-                                        />
-                                    ))}
-                                </div>
+                            <div className="rounded-2xl shadow-xl overflow-hidden">
+                                <img
+                                    src="/scenarios/isolated_words_problem.png"
+                                    alt="Persona aislada en una conversación"
+                                    className="w-full h-full object-cover"
+                                />
                             </div>
                         </div>
 
                     </div>
                 </div>
             </section>
+            */}
 
-            {/* Solution Section */}
+            {/* Solution Section - COMMENTED OUT FOR REVIEW */}
+            {/*
             <section className="py-16 bg-white">
                 <div className="max-w-6xl mx-auto px-6">
                     <div className="flex flex-col md:flex-row items-center gap-12">
 
-                        {/* Left: Solution badges */}
                         <div className="flex-1">
                             <div className="flex flex-col gap-3">
                                 <span className="px-4 py-3 text-green-700 rounded-xl text-sm font-medium">
@@ -226,22 +180,20 @@ export default function LandingPage() {
                             </Link>
                         </div>
 
-                        {/* Right: Text */}
                         <div className="flex-1">
                             <h2 className="text-4xl md:text-5xl font-bold text-gray-900 leading-tight mb-6">
                                 En YoPuedo360
                                 <span className="bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
-                                    {" "}aprendes inglés{" "}
+                                    {" "}aprendes idiomas{" "}
                                 </span>
-                                como lo usas en la vida real
+                                y lo usas en la vida real
                             </h2>
 
                             <p className="text-xl text-gray-600">
-                                No empiezas por reglas.
-                                Empiezas por situaciones reales: reuniones, viajes, trabajo.
+                                Cada lección te prepara para hablar con confianza,
                                 <br />
                                 <strong className="text-gray-800">
-                                    Cada lección te prepara para hablar, no para memorizar.
+                                    y no sólo para memorizar.
                                 </strong>
                             </p>
                         </div>
@@ -249,6 +201,7 @@ export default function LandingPage() {
                     </div>
                 </div>
             </section>
+            */}
 
             {/* Footer */}
             <footer className="py-8 text-center text-gray-500 text-sm">
