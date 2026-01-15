@@ -13,7 +13,15 @@ const scenarioImages = {
     'office': '/scenarios/office.jpg',
     'cooking': '/scenarios/cooking.jpg',
     'university': '/scenarios/university.jpg',
-    // Add more as we generate them
+    'culture': '/scenarios/culture.png',
+    'social_media': '/scenarios/social_media.png',
+    'work-meetings': '/scenarios/work-meetings.png',
+    'phone': '/scenarios/phone.png',
+    'job-interview': '/scenarios/job-interview.png',
+    'restaurant': '/scenarios/restaurant.png',
+    'formal_emails': '/scenarios/formal_emails.png',
+    'car_rental': '/scenarios/car_rental.png',
+    'shopping': '/scenarios/shopping.png',
 };
 
 function ScenarioCard({ scenario, rank, onClick }) {
@@ -82,20 +90,20 @@ function ScenarioCard({ scenario, rank, onClick }) {
 
             {/* Content */}
             <div className="flex-1 min-w-0">
-                <h3 className="text-white font-semibold truncate">
+                <h3 className="text-black font-semibold truncate">
                     {name}
                 </h3>
-                <p className="text-white/50 text-sm line-clamp-2 mt-1">
+                <p className="text-gray-500 text-sm line-clamp-2 mt-1">
                     {description}
                 </p>
 
                 {/* Metadata */}
                 <div className="flex flex-wrap gap-2 mt-2">
-                    <span className="text-xs px-2 py-1 bg-white/5 rounded text-cyan-400">
+                    <span className="text-xs px-2 py-1 bg-white/5 rounded text-cyan-500">
                         {difficulty_min || 'A1'}{difficulty_max && difficulty_max !== difficulty_min && ` - ${difficulty_max}`}
                     </span>
                     {milestones_count > 0 && (
-                        <span className="text-xs px-2 py-1 bg-white/5 rounded text-emerald-400">
+                        <span className="text-xs px-2 py-1 bg-white/5 rounded text-emerald-500">
                             {milestones_count} lecciones
                         </span>
                     )}

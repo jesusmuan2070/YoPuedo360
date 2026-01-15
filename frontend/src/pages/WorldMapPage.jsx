@@ -14,6 +14,13 @@ function WorldMapPage() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [userProgress, setUserProgress] = useState(null);
+    const [showAriaBadge, setShowAriaBadge] = useState(true);
+
+    // Auto-hide ARIA badge after 3 seconds
+    useEffect(() => {
+        const timer = setTimeout(() => setShowAriaBadge(false), 5000);
+        return () => clearTimeout(timer);
+    }, []);
 
     useEffect(() => {
         loadData();
@@ -71,7 +78,7 @@ function WorldMapPage() {
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+        <div className="min-h-screen bg-gradient-to-br from-orange-100 via-amber-50 to-orange-50">
             {/* Header */}
             <header className="flex justify-between items-center p-6 bg-black/30 backdrop-blur-lg border-b border-white/10">
                 <div>
@@ -108,13 +115,15 @@ function WorldMapPage() {
 
             {/* Main Content */}
             <main className="p-6 max-w-7xl mx-auto">
-                {/* ARIA Badge */}
-                <div className="inline-flex items-center gap-3 px-4 py-3 bg-gradient-to-r from-purple-500/20 to-cyan-500/20 border border-purple-500/40 rounded-full mb-6">
-                    <span className="text-xl">🤖</span>
-                    <span className="text-sm text-white/90">
-                        ARIA ha seleccionado estos escenarios basándose en tu perfil
-                    </span>
-                </div>
+                {/* ARIA Badge - Shows for 3 seconds */}
+                {showAriaBadge && (
+                    <div className="inline-flex items-center gap-3 px-4 py-3 bg-gradient-to-r from-purple-500/20 to-cyan-500/20 border border-purple-500/40 rounded-full mb-6 animate-pulse">
+                        <span className="text-xl">🤖</span>
+                        <span className="text-sm text-gray-700">
+                            ARIA ha seleccionado estos escenarios basándose en tu perfil
+                        </span>
+                    </div>
+                )}
 
                 {/* Scenarios Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
