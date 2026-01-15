@@ -1,0 +1,25 @@
+# YoPuedo360 - Backend Requirements
+# Django & REST Framework
+Django>=5.0
+djangorestframework>=3.14
+djangorestframework-simplejwt>=5.3
+django-cors-headers>=4.3
+
+# Database
+psycopg2-binary>=2.9  # PostgreSQL adapter
+
+# AI Providers
+openai>=1.0
+google-generativeai>=0.3  # Google Gemini
+
+# Utilities
+python-dotenv>=1.0
+Pillow>=10.0  # Image processing
+pydub>=0.25   # Audio processing
+
+# Development
+pytest>=7.0
+pytest-django>=4.5
+
+# Production
+gunicorn>=21.0

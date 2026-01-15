@@ -1,0 +1,137 @@
+@import "tailwindcss";
+
+/* Custom design tokens */
+@theme {
+  --color-primary: #667eea;
+  --color-primary-dark: #764ba2;
+}
+
+/* Custom base styles */
+body {
+  @apply font-sans antialiased bg-gray-50 text-gray-900;
+}
+
+/* Custom component classes */
+.btn-primary {
+  @apply w-full py-4 px-6 text-white rounded-xl font-semibold transition-all duration-200;
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+}
+
+.btn-primary:hover:not(:disabled) {
+  @apply -translate-y-0.5;
+  box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+}
+
+.btn-primary:disabled {
+  @apply opacity-60 cursor-not-allowed translate-y-0;
+}
+
+.btn-secondary {
+  @apply py-4 px-6 bg-transparent border-2 rounded-xl font-semibold transition-all duration-200;
+  color: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+.btn-secondary:hover {
+  background: rgba(102, 126, 234, 0.1);
+}
+
+.card {
+  @apply bg-white rounded-2xl p-8 shadow-xl;
+  animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.selection-card {
+  @apply flex flex-col items-center gap-2 p-4 bg-gray-50 border-2 border-transparent rounded-xl cursor-pointer transition-all duration-200;
+}
+
+.selection-card:hover {
+  @apply bg-gray-100;
+}
+
+.selection-card[data-selected="true"] {
+  background: rgba(102, 126, 234, 0.1);
+  border-color: var(--color-primary);
+}
+
+.option-card {
+  @apply p-4 bg-white border-2 border-gray-200 rounded-xl cursor-pointer transition-all duration-200 text-left;
+}
+
+.option-card:hover {
+  border-color: var(--color-primary);
+  background: rgba(102, 126, 234, 0.05);
+}
+
+.option-card[data-selected="true"] {
+  border-color: var(--color-primary);
+  background: rgba(102, 126, 234, 0.1);
+}
+
+.progress-bar {
+  @apply h-1.5 rounded-full overflow-hidden;
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.progress-fill {
+  @apply h-full bg-white rounded-full transition-all duration-300;
+}
+
+/* Gradient backgrounds */
+.bg-gradient-primary {
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+}
+
+.bg-gradient-success {
+  background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+}
+
+/* Text primary color */
+.text-primary {
+  color: var(--color-primary);
+}
+
+/* Floating animations for landing page */
+@keyframes float {
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes floatDelay {
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+.animate-float-delay {
+  animation: floatDelay 3s ease-in-out infinite 0.5s;
+}

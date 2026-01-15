@@ -1,0 +1,25 @@
+# YoPuedo360 - Docker Compose
+# Ejecutar con: docker compose up -d
+
+services:
+  # PostgreSQL Database
+  db:
+    image: postgres:16-alpine
+    container_name: yopuedo360_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: yopuedo360
+      POSTGRES_USER: yopuedo360_user
+      POSTGRES_PASSWORD: yopuedo360_secret_2024
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U yopuedo360_user -d yopuedo360" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:

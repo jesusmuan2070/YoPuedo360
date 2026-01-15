@@ -1,0 +1,44 @@
+# Dependencies
+node_modules/
+__pycache__/
+*.pyc
+.pyo
+.pyd
+
+# Environment files
+.env
+.env.local
+.env.*.local
+venv/
+.venv/
+
+# Build outputs
+dist/
+build/
+*.egg-info/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+
+# Database
+*.sqlite3
+db.sqlite3
+
+# Media uploads (optional - uncomment if you don't want to track)
+# media/
+
+# Coverage
+coverage/
+.coverage
+htmlcov/
