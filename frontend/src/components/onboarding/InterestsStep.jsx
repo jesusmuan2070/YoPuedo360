@@ -6,6 +6,20 @@
 import { useState, useEffect } from 'react';
 import { onboardingAPI } from '../../services/api';
 
+// Mapping de intereses a imágenes (las que ya tenemos)
+const interestImages = {
+    'art': '/scenarios/culture.png',
+    'cinema': '/scenarios/cinema.png',
+    'cooking': '/scenarios/cooking.jpg',
+    'fashion': '/scenarios/shopping.png',
+    'fitness': '/scenarios/gym.png',
+    'gaming': '/scenarios/gaming.png',
+    'movies': '/scenarios/cinema.png',
+    'reading': '/scenarios/university.jpg',
+    'sports': '/scenarios/gym.png',
+    'technology': '/scenarios/office.jpg',
+};
+
 export default function InterestsStep({ data, onComplete, onBack }) {
     const [interests, setInterests] = useState([]);
     const [selectedInterests, setSelectedInterests] = useState(data.interests || {});
@@ -76,7 +90,22 @@ export default function InterestsStep({ data, onComplete, onBack }) {
                                 : 'bg-gray-50 hover:bg-gray-100'
                                 }`}
                         >
-                            <span className="text-2xl mb-1">{interest.icon}</span>
+                            {/* Image > Emoji > Initial fallback */}
+                            <div className="w-12 h-12 mb-1 flex items-center justify-center">
+                                {interestImages[interest.id] ? (
+                                    <img
+                                        src={interestImages[interest.id]}
+                                        alt={interest.label}
+                                        className="w-12 h-12 object-cover rounded-lg"
+                                    />
+                                ) : interest.icon && !interest.icon.includes('?') ? (
+                                    <span className="text-2xl">{interest.icon}</span>
+                                ) : (
+                                    <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-bold text-lg">
+                                        {interest.label?.charAt(0)?.toUpperCase() || '?'}
+                                    </div>
+                                )}
+                            </div>
                             <span className="text-xs text-gray-700 text-center leading-tight">{interest.label}</span>
                         </button>
                     );

@@ -7,10 +7,6 @@ import { Link } from 'react-router-dom';
 export default function WelcomeStep({ onComplete }) {
     return (
         <div className="text-center">
-            <div className="w-20 h-20 bg-gradient-to-br from-purple-500 to-pink-500 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
-                <span className="text-4xl">🧠</span>
-            </div>
-
             <h1 className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent mb-2">
                 ¡Bienvenido!
             </h1>
@@ -18,21 +14,21 @@ export default function WelcomeStep({ onComplete }) {
                 Personalicemos tu experiencia de aprendizaje
             </p>
 
-            <div className="grid grid-cols-2 gap-3 mb-6">
+            <div className="flex justify-center gap-4">
                 <div className="bg-purple-50 rounded-xl p-3 text-center">
-                    <span className="text-2xl">🎯</span>
+                    <img src="/scenarios/your_style.png" alt="Estilo" className="w-16 h-16 mx-auto object-cover rounded-xl" />
                     <p className="text-xs text-gray-600 mt-1">Tu estilo</p>
                 </div>
                 <div className="bg-pink-50 rounded-xl p-3 text-center">
-                    <span className="text-2xl">🏰</span>
+                    <img src="/scenarios/memory_palace.png" alt="Palace" className="w-16 h-16 mx-auto object-cover rounded-xl" />
                     <p className="text-xs text-gray-600 mt-1">Memory Palace</p>
                 </div>
                 <div className="bg-orange-50 rounded-xl p-3 text-center">
-                    <span className="text-2xl">🤖</span>
+                    <img src="/scenarios/adaptive_ai.png" alt="IA" className="w-16 h-16 mx-auto object-cover rounded-xl" />
                     <p className="text-xs text-gray-600 mt-1">IA adaptativa</p>
                 </div>
                 <div className="bg-green-50 rounded-xl p-3 text-center">
-                    <span className="text-2xl">🔥</span>
+                    <img src="/scenarios/streak.png" alt="Streak" className="w-16 h-16 mx-auto object-cover rounded-xl" />
                     <p className="text-xs text-gray-600 mt-1">Tu streak</p>
                 </div>
             </div>

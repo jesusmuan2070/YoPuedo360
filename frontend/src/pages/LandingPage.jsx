@@ -10,8 +10,7 @@ export default function LandingPage() {
             {/* Header */}
             <header className="flex justify-between items-center px-6 py-4 max-w-7xl mx-auto">
                 <div className="flex items-center gap-2">
-                    <span className="text-3xl">🧠</span>
-                    <span className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+                    <span className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
                         YoPuedo360
                     </span>
                 </div>
@@ -28,9 +27,9 @@ export default function LandingPage() {
                 <div className="flex flex-col md:flex-row items-center gap-12">
                     {/* Illustration */}
                     <div className="flex-1 flex justify-center">
-                        <div className="relative w-80 h-80 md:w-96 md:h-96">
+                        <div className="relative w-96 h-96 md:w-96 md:h-96">
                             {/* Background circles */}
-                            <div className="absolute inset-0 bg-gradient-to-br from-purple-100 to-pink-100 rounded-full animate-pulse"></div>
+                            <div className="absolute inset-0 bg-gradient-to-br from-purple-100 to-pink-100 rounded-full animate-pulse blur-xl"></div>
 
                             {/* Character/Icons arrangement */}
                             <div className="absolute inset-0 flex items-center justify-center">
@@ -82,31 +81,31 @@ export default function LandingPage() {
             </main>
 
             {/* Features Section */}
-            <section className="bg-gray-50 py-16">
+            <section className="bg-white/10 py-16">
                 <div className="max-w-7xl mx-auto px-6">
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                         <div className="text-center p-6">
-                            <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-500 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                                <span className="text-3xl">🎯</span>
+                            <div className="w-18 h-18 bg-gradient-to-br from-purple-500 to-pink-500 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                                <img src="/scenarios/your_style.png" alt="Personalizado para ti" className="w-full h-full object-cover rounded-xl" />
                             </div>
-                            <h3 className="text-xl font-bold text-gray-900 mb-2">Personalizado para ti</h3>
-                            <p className="text-gray-600">Descubre si eres visual, auditivo o kinestésico y aprende a tu manera.</p>
+                            <h3 className="text-xl font-bold text-gray-700 mb-2">Personalizado para ti</h3>
+                            <p className="text-gray-500">Descubre si eres visual, auditivo o kinestésico y aprende a tu manera.</p>
                         </div>
 
                         <div className="text-center p-6">
-                            <div className="w-16 h-16 bg-gradient-to-br from-orange-400 to-red-500 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                                <span className="text-3xl">🏰</span>
+                            <div className="w-18 h-18 bg-gradient-to-br from-orange-400 to-red-500 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                                <img src="/scenarios/memory_palace.png" alt="Tu Palacio de Memoria" className="w-full h-full object-cover rounded-xl" />
                             </div>
-                            <h3 className="text-xl font-bold text-gray-900 mb-2">Tu Palacio de Memoria</h3>
-                            <p className="text-gray-600">Construye mundos y memoriza vocabulario usando técnicas de memory palace.</p>
+                            <h3 className="text-xl font-bold text-gray-700 mb-2">Tu Palacio de Memoria</h3>
+                            <p className="text-gray-500">Construye mundos y memoriza vocabulario usando técnicas de memory palace.</p>
                         </div>
 
                         <div className="text-center p-6">
-                            <div className="w-16 h-16 bg-gradient-to-br from-green-400 to-emerald-500 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                                <span className="text-3xl">🤖</span>
+                            <div className="w-18 h-18 bg-gradient-to-br from-green-400 to-emerald-500 rounded-xl flex items-center justify-center mx-auto mb-4">
+                                <img src="/scenarios/adaptive_ai.png" alt="IA que te entiende" className="w-full h-full object-cover rounded-xl" />
                             </div>
-                            <h3 className="text-xl font-bold text-gray-900 mb-2">IA que te entiende</h3>
-                            <p className="text-gray-600">Retroalimentación inteligente que se adapta a tu progreso.</p>
+                            <h3 className="text-xl font-bold text-gray-700 mb-2">IA que te entiende</h3>
+                            <p className="text-gray-500">Retroalimentación inteligente que se adapta a tu progreso.</p>
                         </div>
                     </div>
                 </div>
