@@ -2,9 +2,25 @@
  * Landing Page - Main entry point (Duolingo-inspired)
  */
 
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 
 export default function LandingPage() {
+    const [currentSlide, setCurrentSlide] = useState(0);
+    const problems = [
+        { img: '/scenarios/isolated_words_problem.png', text: 'Memorizas palabras sueltas' },
+        { img: null, emoji: '', text: 'Frases que no usarías en la vida real' },
+        { img: null, emoji: '', text: 'Mismo contenido para todos' },
+        { img: null, emoji: '', text: 'Mucho estudio, poca confianza' }
+    ];
+
+    // Auto-avanzar cada 3 segundos
+    useEffect(() => {
+        const timer = setInterval(() => {
+            setCurrentSlide((prev) => (prev + 1) % problems.length);
+        }, 5000);
+        return () => clearInterval(timer);
+    }, []);
     return (
         <div className="min-h-screen bg-white">
             {/* Header */}
@@ -107,6 +123,129 @@ export default function LandingPage() {
                             <h3 className="text-xl font-bold text-gray-700 mb-2">IA que te entiende</h3>
                             <p className="text-gray-500">Retroalimentación inteligente que se adapta a tu progreso.</p>
                         </div>
+                    </div>
+                </div>
+            </section>
+
+            {/* Problem Section */}
+            <section className="py-16 bg-white">
+                <div className="max-w-6xl mx-auto px-6">
+                    <div className="flex flex-col md:flex-row items-center gap-12">
+
+                        {/* Left: Text */}
+                        <div className="flex-1">
+                            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 leading-tight mb-6">
+                                ¿Estudias pero
+                                <span className="bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+                                    {" "}te quedas en blanco{" "}
+                                </span>
+                                cuando lo necesitas?
+                            </h2>
+
+                            <p className="text-xl text-gray-600">
+                                Sabes vocabulario. Conoces reglas.
+                                <br />
+                                Pero en una reunión, un viaje o una llamada real…
+                                <br />
+                                <strong className="text-gray-800">no sabes qué decir.</strong>
+                            </p>
+                        </div>
+
+                        {/* Right: Auto-Carousel */}
+                        <div className="flex-1">
+                            <div className="relative overflow-hidden rounded-2xl">
+                                <div
+                                    className="flex transition-transform duration-500 ease-in-out"
+                                    style={{ transform: `translateX(-${currentSlide * 100}%)` }}
+                                >
+                                    {problems.map((problem, index) => (
+                                        <div key={index} className="w-full flex-shrink-0">
+                                            <div className="rounded-2xl p-2">
+                                                <div className="w-full aspect-square bg-white rounded-xl overflow-hidden flex items-center justify-center">
+                                                    {problem.img ? (
+                                                        <img
+                                                            src={problem.img}
+                                                            alt={problem.text}
+                                                            className="w-full h-full object-cover"
+                                                        />
+                                                    ) : (
+                                                        <span className="text-7xl">{problem.emoji}</span>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+
+                                {/* Indicadores */}
+                                <div className="flex justify-center gap-2 mt-4">
+                                    {problems.map((_, index) => (
+                                        <button
+                                            key={index}
+                                            onClick={() => setCurrentSlide(index)}
+                                            className={`w-2 h-2 rounded-full transition-colors ${currentSlide === index ? 'bg-purple-600' : 'bg-gray-300'
+                                                }`}
+                                            aria-label={`Ir a slide ${index + 1}`}
+                                        />
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </section>
+
+            {/* Solution Section */}
+            <section className="py-16 bg-white">
+                <div className="max-w-6xl mx-auto px-6">
+                    <div className="flex flex-col md:flex-row items-center gap-12">
+
+                        {/* Left: Solution badges */}
+                        <div className="flex-1">
+                            <div className="flex flex-col gap-3">
+                                <span className="px-4 py-3 text-green-700 rounded-xl text-sm font-medium">
+                                    Practicas frases completas, no palabras sueltas
+                                </span>
+                                <span className="px-4 py-3 text-green-700 rounded-xl text-sm font-medium">
+                                    Aprendes dentro de escenarios reales
+                                </span>
+                                <span className="px-4 py-3 text-green-700 rounded-xl text-sm font-medium">
+                                    Contenido adaptado a tu trabajo y objetivos
+                                </span>
+                                <span className="px-4 py-3 text-green-700 rounded-xl text-sm font-medium">
+                                    Sabes qué decir antes de necesitarlo
+                                </span>
+                            </div>
+
+                            <Link
+                                to="/onboarding"
+                                className="block w-full py-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white text-center font-bold text-lg rounded-2xl shadow-lg shadow-purple-500/30 hover:shadow-xl hover:shadow-purple-500/40 hover:-translate-y-1 transition-all mt-6"
+                            >
+                                EMPIEZA AHORA
+                            </Link>
+                        </div>
+
+                        {/* Right: Text */}
+                        <div className="flex-1">
+                            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 leading-tight mb-6">
+                                En YoPuedo360
+                                <span className="bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+                                    {" "}aprendes inglés{" "}
+                                </span>
+                                como lo usas en la vida real
+                            </h2>
+
+                            <p className="text-xl text-gray-600">
+                                No empiezas por reglas.
+                                Empiezas por situaciones reales: reuniones, viajes, trabajo.
+                                <br />
+                                <strong className="text-gray-800">
+                                    Cada lección te prepara para hablar, no para memorizar.
+                                </strong>
+                            </p>
+                        </div>
+
                     </div>
                 </div>
             </section>
