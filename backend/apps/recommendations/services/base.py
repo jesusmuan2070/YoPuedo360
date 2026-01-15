@@ -5,7 +5,7 @@ Abstract base class for all recommender components
 
 from abc import ABC, abstractmethod
 from typing import List, Dict, Any
-from apps.memory_palace.models import Scenario
+from apps.scenarios.models import Scenario
 
 
 class BaseRecommender(ABC):

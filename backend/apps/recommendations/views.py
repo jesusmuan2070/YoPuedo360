@@ -41,7 +41,7 @@ class SimilarScenariosView(APIView):
     permission_classes = [IsAuthenticated]
     
     def get(self, request, scenario_id):
-        from apps.memory_palace.models import Scenario
+        from apps.scenarios.models import Scenario
         
         try:
             scenario = Scenario.objects.get(id=scenario_id)

@@ -25,7 +25,7 @@ urlpatterns = [
     path('api/v1/recommendations/', include('apps.recommendations.urls')),
     
     # Progress API
-    path('api/v1/progress/', include('apps.progress.urls')),
+    path('api/v1/progress/', include('apps.learning_path.urls')),
     
     # Future: Other APIs
     # path('api/v1/users/', include('apps.users.urls')),

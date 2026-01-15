@@ -8,7 +8,7 @@ from django.utils import timezone
 from datetime import timedelta
 from typing import List, Dict, Any
 
-from apps.memory_palace.models import Scenario, UserScenarioProgress, Tag
+from apps.scenarios.models import Scenario, UserScenarioProgress, Tag
 from apps.users.models import LearningProfile
 
 

@@ -260,7 +260,7 @@ class OnboardingOptionsView(APIView):
     permission_classes = [AllowAny]
     
     def get(self, request):
-        from apps.memory_palace.models import Tag
+        from apps.scenarios.models import Tag
         
         # Get all tags grouped by type
         def get_tags_by_type(tag_type):

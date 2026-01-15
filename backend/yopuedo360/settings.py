@@ -40,10 +40,11 @@ INSTALLED_APPS = [
     # YoPuedo360 apps
     'apps.users',
     'apps.onboarding',
-    'apps.content',
-    'apps.memory_palace',
+    'apps.vocabulary',
+    'apps.grammar',
+    'apps.scenarios',
     'apps.avatar',
-    'apps.progress',
+    'apps.learning_path',
     'apps.ai_engine',
     'apps.recommendations',
     'apps.exercises',
@@ -80,27 +81,17 @@ TEMPLATES = [
 WSGI_APPLICATION = 'yopuedo360.wsgi.application'
 
 
-# Database
-# Using PostgreSQL for production, SQLite for development
-
-if os.environ.get('USE_POSTGRES', 'False') == 'True':
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': os.environ.get('POSTGRES_DB', 'yopuedo360'),
-            'USER': os.environ.get('POSTGRES_USER', 'postgres'),
-            'PASSWORD': os.environ.get('POSTGRES_PASSWORD', ''),
-            'HOST': os.environ.get('POSTGRES_HOST', 'localhost'),
-            'PORT': os.environ.get('POSTGRES_PORT', '5432'),
-        }
+# Database - PostgreSQL only
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': os.environ.get('POSTGRES_DB', 'yopuedo360'),
+        'USER': os.environ.get('POSTGRES_USER', 'yopuedo360_user'),
+        'PASSWORD': os.environ.get('POSTGRES_PASSWORD', 'yopuedo360_secret_2024'),
+        'HOST': os.environ.get('POSTGRES_HOST', 'localhost'),
+        'PORT': os.environ.get('POSTGRES_PORT', '5433'),
     }
-else:
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
-        }
-    }
+}
 
 
 # Password validation

@@ -4,7 +4,7 @@ Uses OpenAI to intelligently rank scenarios based on user profile
 """
 
 from typing import List, Dict, Any
-from apps.memory_palace.models import Scenario
+from apps.scenarios.models import Scenario
 from apps.ai_services.clients.openai_client import OpenAIClient
 from apps.ai_services.prompts.scenario_ranking import (
     SCENARIO_RANKING_SYSTEM,

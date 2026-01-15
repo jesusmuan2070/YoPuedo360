@@ -29,13 +29,13 @@ class ExerciseBase(models.Model):
     
     # Relaciones
     milestone = models.ForeignKey(
-        'memory_palace.Milestone',
+        'scenarios.Milestone',
         on_delete=models.CASCADE,
         related_name='%(class)s_exercises',
         null=True, blank=True
     )
     grammar_topic = models.ForeignKey(
-        'content.GrammarTopic',
+        'grammar.GrammarTopic',
         on_delete=models.SET_NULL,
         null=True, blank=True,
         related_name='%(class)s_exercises'

@@ -4,7 +4,7 @@ Filters scenarios by user's CEFR level
 """
 
 from typing import List, Dict, Any
-from apps.memory_palace.models import Scenario
+from apps.scenarios.models import Scenario
 from .base import BaseRecommender
 
 

@@ -7,7 +7,7 @@ Main orchestrator that combines all recommendation components.
 
 from typing import List, Dict, Any, Optional
 from dataclasses import dataclass
-from apps.memory_palace.models import Scenario
+from apps.scenarios.models import Scenario
 from apps.users.models import LearningProfile
 
 from .level_filter import LevelFilter
@@ -63,7 +63,7 @@ class RecommendationEngine:
         import hashlib
         import json
         from datetime import date
-        from apps.progress.models import UserMilestoneProgress
+        from apps.learning_path.models import UserMilestoneProgress
         from apps.recommendations.models import UserOrderedScenarios
         
         profile = self._get_user_profile(user)
