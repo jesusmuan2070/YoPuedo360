@@ -1,161 +1,454 @@
 """
 Grammar Models - 4-Layer Architecture
-Manages grammar rules, topics, and user progress
+Manages universal grammar patterns and their contextual usage in milestones
 """
 
 from django.db import models
 from django.contrib.auth import get_user_model
+from django.utils import timezone
+from datetime import timedelta
 
 User = get_user_model()
 
 
 class GrammarUnit(models.Model):
     """
-    Unidad gramatical universal (Capa 1 - vive 1 vez).
-    Ejemplo: can/can't para habilidad/permiso
+    CAPA 1: Unidad gramatical UNIVERSAL
     
-    Esta es la regla gramatical base que existe independientemente
-    de cualquier contexto o escenario.
+    Vive 1 vez en el sistema, se usa en MÚLTIPLES milestones.
+    Ejemplos: "can + infinitive", "a/an articles", "present simple"
+    
+    Diferencia vs Vocabulary:
+    - Vocabulary: Específico del dominio (coffee → restaurant)
+    - Grammar: Universal (can → restaurant, airport, hotel)
     """
-    # Identificador único
-    slug = models.SlugField(unique=True, db_index=True)  # "can_cant_ability"
     
-    # CEFR Level
     LEVEL_CHOICES = [
         ('A1', 'A1'), ('A2', 'A2'),
         ('B1', 'B1'), ('B2', 'B2'),
         ('C1', 'C1'), ('C2', 'C2'),
     ]
-    level = models.CharField(max_length=2, choices=LEVEL_CHOICES, db_index=True)
     
-    # Forma gramatical
-    form = models.CharField(max_length=200)  # "can / can't"
-    form_pattern = models.CharField(max_length=200, blank=True)  # "subject + can + verb"
+    CATEGORY_CHOICES = [
+        ('modal_verb', 'Modal Verbs'),
+        ('article', 'Articles'),
+        ('tense', 'Tenses'),
+        ('pronoun', 'Pronouns'),
+        ('preposition', 'Prepositions'),
+        ('conjunction', 'Conjunctions'),
+        ('question_form', 'Question Formation'),
+        ('negation', 'Negation'),
+        ('auxiliary', 'Auxiliary Verbs'),
+        ('possessive', 'Possessives'),
+        ('comparative', 'Comparatives/Superlatives'),
+        ('gerund_infinitive', 'Gerunds & Infinitives'),
+    ]
     
-    # Significado/función
-    meaning = models.CharField(max_length=200)  # "ability / permission"
-    meaning_es = models.CharField(max_length=200, blank=True)  # "habilidad / permiso"
+    # ==========================================
+    # IDENTIFICADORES
+    # ==========================================
+    slug = models.SlugField(
+        unique=True,
+        db_index=True,
+        help_text='Identificador único (ej: can-infinitive, a-an-articles)'
+    )
     
-    # Ejemplos universales (no ligados a contexto)
-    examples = models.JSONField(default=list)
-    # [
-    #   {"en": "I can swim", "es": "Puedo nadar"},
-    #   {"en": "She can't drive", "es": "Ella no puede manejar"}
-    # ]
+    name = models.CharField(
+        max_length=100,
+        help_text='Nombre descriptivo (ej: Can + Infinitive)'
+    )
     
-    # Metadatos
+    # ==========================================
+    # CLASIFICACIÓN
+    # ==========================================
+    level = models.CharField(
+        max_length=2,
+        choices=LEVEL_CHOICES,
+        db_index=True,
+        help_text='Nivel CEFR donde se introduce'
+    )
+    
+    grammatical_category = models.CharField(
+        max_length=50,
+        choices=CATEGORY_CHOICES,
+        help_text='Categoría gramatical'
+    )
+    
+    # ==========================================
+    # FORMA Y SIGNIFICADO
+    # ==========================================
+    form = models.TextField(
+        help_text='Forma gramatical (ej: can + base verb)'
+    )
+    
+    meaning_en = models.TextField(
+        help_text='Significado/función en inglés (ej: Ability, permission, possibility)'
+    )
+    
+    meaning_es = models.TextField(
+        help_text='Significado/función en español (ej: Habilidad, permiso, posibilidad)'
+    )
+    
+    # ==========================================
+    # METADATA ESTRUCTURAL (JSON)
+    # ==========================================
+    structural_metadata = models.JSONField(
+        default=dict,
+        blank=True,
+        help_text='''Metadata estructural de la gramática:
+        {
+          "pattern": "SUBJECT + can + BASE_VERB",
+          "valid_forms": ["I can", "you can", "he can"],
+          "conjugation": {"I": "can", "you": "can", "he/she/it": "can"},
+          "components": {
+            "modal": "can",
+            "verb_form": "base/infinitive"
+          }
+        }'''
+    )
+    
+    # ==========================================
+    # EJEMPLOS UNIVERSALES
+    # ==========================================
+    examples = models.JSONField(
+        default=list,
+        blank=True,
+        help_text='Ejemplos genéricos (no contextuales): [{"en": "I can swim", "es": "Puedo nadar"}]'
+    )
+    
+    # ==========================================
+    # ERRORES COMUNES
+    # ==========================================
+    common_error_patterns = models.JSONField(
+        default=list,
+        blank=True,
+        help_text='''Errores comunes y correcciones:
+        [
+          {
+            "error": "He cans swim",
+            "rule": "Modal verbs don't add -s in 3rd person",
+            "correction": "He can swim"
+          }
+        ]'''
+    )
+    
+    # ==========================================
+    # PEDAGÓGICO
+    # ==========================================
+    is_universal = models.BooleanField(
+        default=True,
+        help_text='¿Se usa en todos los contextos? (Siempre True para grammar)'
+    )
+    
+    pedagogical_sequence = models.PositiveIntegerField(
+        default=1,
+        help_text='Orden GLOBAL de introducción (1=can, 2=will, 3=could, etc.)'
+    )
+    
+    # ==========================================
+    # METADATA
+    # ==========================================
+    source = models.CharField(
+        max_length=50,
+        default='manual',
+        choices=[
+            ('manual', 'Manual'),
+            ('claude', 'Generated by Claude'),
+            ('imported', 'Imported from dataset'),
+        ],
+        help_text='Origen de los datos'
+    )
+    
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     
     class Meta:
-        ordering = ['level', 'slug']
-        verbose_name = "Grammar Unit"
-        verbose_name_plural = "Grammar Units"
-    
-    def __str__(self):
-        return f"[{self.level}] {self.form} - {self.meaning}"
-
-
-class GrammarTopic(models.Model):
-    """
-    Tema gramatical (ej: Present Simple, Past Simple).
-    Obligatorio para cada nivel CEFR.
-    """
-    LEVEL_CHOICES = [
-        ('A1', 'A1'), ('A2', 'A2'),
-        ('B1', 'B1'), ('B2', 'B2'),
-        ('C1', 'C1'), ('C2', 'C2'),
-    ]
-    
-    slug = models.SlugField(unique=True)
-    name = models.CharField(max_length=100)  # "Present Simple"
-    name_es = models.CharField(max_length=100, blank=True)  # "Presente Simple"
-    level = models.CharField(max_length=2, choices=LEVEL_CHOICES, db_index=True)
-    order = models.PositiveIntegerField()  # Orden obligatorio en el nivel
-    
-    description = models.TextField(blank=True)
-    pattern = models.CharField(max_length=200, blank=True)  # "Subject + verb"
-    examples = models.JSONField(default=list)  # ["I work", "She eats"]
-    
-    # Reglas y excepciones
-    rules = models.JSONField(default=list)  # Reglas principales
-    exceptions = models.JSONField(default=list)  # Excepciones comunes
-    
-    # Cuánto tiempo toma aprender
-    estimated_time = models.PositiveIntegerField(default=30)  # minutos
-    
-    is_active = models.BooleanField(default=True)
-    
-    class Meta:
-        db_table = 'content_grammartopic'  # Mantener nombre viejo
-        ordering = ['level', 'order']
-        unique_together = ['level', 'order']
+        db_table = 'grammar_unit'
+        ordering = ['pedagogical_sequence', 'level']
+        verbose_name = 'Grammar Unit'
+        verbose_name_plural = 'Grammar Units'
+        indexes = [
+            models.Index(fields=['level', 'grammatical_category']),
+            models.Index(fields=['pedagogical_sequence']),
+        ]
     
     def __str__(self):
         return f"[{self.level}] {self.name}"
 
 
-class GrammarLesson(models.Model):
+class GrammarInMilestone(models.Model):
     """
-    Lección específica dentro de un tema gramatical.
-    Ej: Present Simple → 1. Affirmative, 2. Negative, 3. Questions
+    CAPA 2: Conecta GrammarUnit universal con Milestone específico
+    
+    Mismo grammar (can), diferente contexto:
+    - Restaurant: "Can I have a coffee?"
+    - Airport: "Can I see your passport?"
+    - Hotel: "Can I check in?"
     """
-    topic = models.ForeignKey(GrammarTopic, on_delete=models.CASCADE, related_name='lessons')
-    order = models.PositiveIntegerField()
-    name = models.CharField(max_length=100)  # "Affirmative sentences"
     
-    explanation = models.TextField()  # Explicación detallada
-    examples = models.JSONField(default=list)  # Ejemplos con traducción
+    IMPORTANCE_CHOICES = [
+        (1, 'Opcional'),
+        (2, 'Útil'),
+        (3, 'Importante'),
+        (4, 'Muy importante'),
+        (5, 'Crítico'),
+    ]
     
-    # Ejercicios integrados
-    exercises = models.JSONField(default=list)  # Ejercicios de práctica
+    grammar = models.ForeignKey(
+        GrammarUnit,
+        on_delete=models.CASCADE,
+        related_name='milestone_usages',
+        help_text='Grammar unit universal'
+    )
     
-    estimated_time = models.PositiveIntegerField(default=10)  # minutos
+    milestone = models.ForeignKey(
+        'scenarios.Milestone',
+        on_delete=models.CASCADE,
+        related_name='grammar_items',
+        help_text='Milestone donde se usa este grammar'
+    )
+    
+    # ==========================================
+    # CONTEXTUALIZACIÓN
+    # ==========================================
+    context_example = models.TextField(
+        blank=True,
+        help_text='Ejemplo en contexto específico (ej: Can I have a coffee?)'
+    )
+    
+    # ==========================================
+    # IMPORTANCIA
+    # ==========================================
+    importance_weight = models.IntegerField(
+        default=3,
+        choices=IMPORTANCE_CHOICES,
+        help_text='Importancia de este grammar en este milestone'
+    )
+    
+    is_primary_focus = models.BooleanField(
+        default=False,
+        help_text='¿Este grammar es el OBJETIVO principal del milestone?'
+    )
+    
+    # ==========================================
+    # ORDEN PEDAGÓGICO
+    # ==========================================
+    introduction_order = models.PositiveIntegerField(
+        default=1,
+        help_text='Orden de introducción EN ESTE MILESTONE (grammar antes que vocabulario)'
+    )
+    
+    # ==========================================
+    # VOCABULARIO SUGERIDO
+    # ==========================================
+    suggested_vocabulary_words = models.JSONField(
+        default=list,
+        blank=True,
+        help_text='Palabras que se combinan bien con este grammar en este contexto: ["coffee", "water", "menu"]'
+    )
+    
+    created_at = models.DateTimeField(auto_now_add=True)
     
     class Meta:
-        db_table = 'content_grammarlesson'  # Mantener nombre viejo
-        ordering = ['topic', 'order']
-        unique_together = ['topic', 'order']
+        db_table = 'grammar_in_milestone'
+        unique_together = ['grammar', 'milestone']
+        ordering = ['introduction_order']
+        indexes = [
+            models.Index(fields=['milestone', 'importance_weight']),
+            models.Index(fields=['milestone', 'introduction_order']),
+        ]
+        verbose_name = 'Grammar in Milestone'
+        verbose_name_plural = 'Grammar in Milestones'
     
     def __str__(self):
-        return f"{self.topic.name} - {self.name}"
+        return f"{self.grammar.name} in {self.milestone.name} (order: {self.introduction_order})"
 
 
 class UserGrammarProgress(models.Model):
     """
-    Tracking de gramática aprendida por usuario.
-    Permite saber qué temas ha completado y cuáles le faltan.
+    CAPA 4: Tracking de progreso de grammar con SRS (Spaced Repetition)
+    
+    Mismo algoritmo SM-2 que UserVocabularyProgress
     """
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='grammar_progress')
-    topic = models.ForeignKey(GrammarTopic, on_delete=models.CASCADE)
     
     STATUS_CHOICES = [
-        ('not_started', 'No iniciado'),
-        ('in_progress', 'En progreso'),
-        ('completed', 'Completado'),
-        ('mastered', 'Dominado'),
+        ('new', 'Nueva'),
+        ('learning', 'Aprendiendo'),
+        ('review', 'En repaso'),
+        ('mastered', 'Dominada'),
     ]
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='not_started')
     
-    # Fechas de tracking
-    started_at = models.DateTimeField(null=True, blank=True)
-    completed_at = models.DateTimeField(null=True, blank=True)
-    last_practiced = models.DateTimeField(null=True, blank=True)
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='grammar_progress'
+    )
     
-    # Puntuación y repasos
-    score = models.PositiveIntegerField(default=0)  # 0-100
-    practice_count = models.PositiveIntegerField(default=0)  # Veces practicado
+    grammar = models.ForeignKey(
+        GrammarUnit,
+        on_delete=models.CASCADE,
+        related_name='user_progress'
+    )
     
-    # SRS para gramática
-    next_review = models.DateField(null=True, blank=True)
+    # ==========================================
+    # SRS - Spaced Repetition System (SM-2)
+    # ==========================================
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default='new'
+    )
+    
+    ease_factor = models.FloatField(
+        default=2.5,
+        help_text='Factor de facilidad (SM-2 algorithm)'
+    )
+    
+    interval = models.PositiveIntegerField(
+        default=1,
+        help_text='Intervalo en días hasta próximo repaso'
+    )
+    
+    repetitions = models.PositiveIntegerField(
+        default=0,
+        help_text='Número de repeticiones correctas consecutivas'
+    )
+    
+    # ==========================================
+    # TRACKING
+    # ==========================================
+    next_review = models.DateField(
+        default=timezone.now,
+        help_text='Fecha del próximo repaso'
+    )
+    
+    last_reviewed = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text='Última vez que se repasó'
+    )
+    
+    times_correct = models.PositiveIntegerField(
+        default=0,
+        help_text='Veces que respondió correctamente'
+    )
+    
+    times_incorrect = models.PositiveIntegerField(
+        default=0,
+        help_text='Veces que respondió incorrectamente'
+    )
+    
+    # ==========================================
+    # METADATA
+    # ==========================================
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
     
     class Meta:
-        db_table = 'content_usergrammarprogress'  # Mantener nombre viejo
-        unique_together = ['user', 'topic']
+        db_table = 'user_grammar_progress'
+        unique_together = ['user', 'grammar']
+        ordering = ['next_review', '-updated_at']
         indexes = [
             models.Index(fields=['user', 'status']),
             models.Index(fields=['user', 'next_review']),
+            models.Index(fields=['grammar', 'status']),
         ]
+        verbose_name = 'User Grammar Progress'
+        verbose_name_plural = 'User Grammar Progress'
     
     def __str__(self):
-        return f"{self.user.username} - {self.topic.name} ({self.status})"
+        return f"{self.user.username} - {self.grammar.name} ({self.status})"
+    
+    def process_review(self, quality):
+        """
+        Procesa el resultado de un repaso usando algoritmo SM-2
+        
+        Args:
+            quality (int): Calidad de la respuesta (0-5)
+                0: Total blackout
+                1: Incorrect pero reconoce
+                2: Incorrect pero casi
+                3: Correct con esfuerzo
+                4: Correct con duda
+                5: Correct perfectamente
+        """
+        from datetime import date
+        
+        self.last_reviewed = timezone.now()
+        
+        if quality >= 3:
+            # Respuesta correcta
+            self.times_correct += 1
+            
+            if self.repetitions == 0:
+                self.interval = 1
+            elif self.repetitions == 1:
+                self.interval = 6
+            else:
+                self.interval = int(self.interval * self.ease_factor)
+            
+            self.repetitions += 1
+            
+            # Actualizar ease_factor
+            self.ease_factor = self.ease_factor + (0.1 - (5 - quality) * (0.08 + (5 - quality) * 0.02))
+            
+            if self.ease_factor < 1.3:
+                self.ease_factor = 1.3
+            
+            # Actualizar estado
+            if self.repetitions >= 3 and self.interval >= 21:
+                self.status = 'mastered'
+            elif self.repetitions >= 1:
+                self.status = 'review'
+            else:
+                self.status = 'learning'
+        
+        else:
+            # Respuesta incorrecta
+            self.times_incorrect += 1
+            self.repetitions = 0
+            self.interval = 1
+            self.status = 'learning'
+        
+        # Calcular próxima fecha de repaso
+        self.next_review = date.today() + timedelta(days=self.interval)
+        self.save()
+    
+    @classmethod
+    def get_grammar_for_review(cls, user, limit=10):
+        """
+        Obtiene grammar units que necesitan repaso hoy
+        
+        Args:
+            user: Usuario
+            limit: Número máximo de items
+        
+        Returns:
+            QuerySet de UserGrammarProgress
+        """
+        from datetime import date
+        today = date.today()
+        
+        return cls.objects.filter(
+            user=user,
+            next_review__lte=today
+        ).select_related('grammar').order_by('next_review')[:limit]
+    
+    @classmethod
+    def get_grammar_stats(cls, user):
+        """
+        Obtiene estadísticas de grammar del usuario
+        
+        Returns:
+            dict con contadores por status
+        """
+        from django.db.models import Count
+        
+        stats = cls.objects.filter(user=user).aggregate(
+            total=Count('id'),
+            new=Count('id', filter=models.Q(status='new')),
+            learning=Count('id', filter=models.Q(status='learning')),
+            review=Count('id', filter=models.Q(status='review')),
+            mastered=Count('id', filter=models.Q(status='mastered')),
+        )
+        return stats

@@ -34,11 +34,12 @@ class ExerciseBase(models.Model):
         related_name='%(class)s_exercises',
         null=True, blank=True
     )
-    grammar_topic = models.ForeignKey(
-        'grammar.GrammarTopic',
+    grammar_unit = models.ForeignKey(
+        'grammar.GrammarUnit',
         on_delete=models.SET_NULL,
         null=True, blank=True,
-        related_name='%(class)s_exercises'
+        related_name='%(class)s_exercises',
+        help_text='Grammar unit that this exercise practices'
     )
     
     # Metadatos
