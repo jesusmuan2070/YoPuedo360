@@ -36,6 +36,7 @@ INSTALLED_APPS = [
     # Third-party apps
     'rest_framework',
     'corsheaders',
+    'django_extensions',
     
     # YoPuedo360 apps
     'apps.users',
