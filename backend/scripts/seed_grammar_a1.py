@@ -1,5 +1,6 @@
 """
-Seed A1 Grammar Topics
+Seed A1 Grammar Units
+Compatible with 4-layer architecture
 Run with: python scripts/seed_grammar_a1.py (from backend folder)
 """
 
@@ -11,307 +12,506 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'yopuedo360.settings')
 django.setup()
 
-from apps.content.models import GrammarTopic, GrammarLesson
+from apps.grammar.models import GrammarUnit
 
-print("📚 Seeding A1 Grammar Topics...")
+print("📚 Seeding A1 Grammar Units...")
 
 # ============================================
-# A1 GRAMMAR TOPICS (11 topics obligatorios)
+# A1 GRAMMAR UNITS (11 unidades básicas)
 # ============================================
 
 A1_GRAMMAR = [
     {
-        'slug': 'a1-verb-to-be',
+        'slug': 'verb-to-be',
         'name': 'Verb TO BE',
-        'name_es': 'Verbo TO BE (ser/estar)',
-        'order': 1,
-        'description': 'El verbo más importante en inglés. Se usa para identificar, describir y expresar estados.',
-        'pattern': 'Subject + am/is/are + complement',
+        'level': 'A1',
+        'grammatical_category': 'auxiliary',
+        'form': 'Subject + am/is/are + complement',
+        'meaning_en': 'Identity, description, states',
+        'meaning_es': 'Identidad, descripción, estados',
+        'pedagogical_sequence': 1,
         'examples': [
-            "I am a student",
-            "She is happy", 
-            "They are from Mexico",
-            "It is cold today"
+            {"en": "I am a student", "es": "Soy estudiante"},
+            {"en": "She is happy", "es": "Ella está feliz"},
+            {"en": "They are from Mexico", "es": "Ellos son de México"}
         ],
-        'rules': [
-            "I → am",
-            "He/She/It → is",
-            "You/We/They → are"
-        ],
-        'lessons': [
-            ('Affirmative', "I am, You are, He is...", ["I am happy", "She is tall"]),
-            ('Negative', "Add 'not' after the verb", ["I am not tired", "He is not here"]),
-            ('Questions', "Invert subject and verb", ["Are you ready?", "Is she your sister?"]),
-            ('Short answers', "Yes, I am / No, I'm not", ["Yes, she is", "No, they aren't"]),
+        'structural_metadata': {
+            "pattern": "SUBJECT + am/is/are + COMPLEMENT",
+            "conjugation": {
+                "I": "am",
+                "you": "are",
+                "he/she/it": "is",
+                "we": "are",
+                "they": "are"
+            }
+        },
+        'common_error_patterns': [
+            {
+                "error": "I is happy",
+                "rule": "Use 'am' with 'I'",
+                "correction": "I am happy"
+            }
         ]
     },
+    
     {
-        'slug': 'a1-present-simple',
+        'slug': 'present-simple',
         'name': 'Present Simple',
-        'name_es': 'Presente Simple',
-        'order': 2,
-        'description': 'Para hablar de rutinas, hábitos y verdades generales.',
-        'pattern': 'Subject + verb (+ s/es for he/she/it)',
+        'level': 'A1',
+        'grammatical_category': 'tense',
+        'form': 'Subject + verb (+ s/es for he/she/it)',
+        'meaning_en': 'Routines, habits, general truths',
+        'meaning_es': 'Rutinas, hábitos, verdades generales',
+        'pedagogical_sequence': 2,
         'examples': [
-            "I work every day",
-            "She speaks English",
-            "They live in Madrid"
+            {"en": "I work every day", "es": "Trabajo todos los días"},
+            {"en": "She speaks English", "es": "Ella habla inglés"},
+            {"en": "They live in Madrid", "es": "Viven en Madrid"}
         ],
-        'rules': [
-            "Add -s for he/she/it: work → works",
-            "Add -es after s, sh, ch, x: watch → watches",
-            "Change y to ies: study → studies"
-        ],
-        'lessons': [
-            ('Affirmative', "I work, She works", ["I eat breakfast at 8", "He plays football"]),
-            ('Negative', "do/does + not + verb", ["I don't like coffee", "She doesn't work here"]),
-            ('Questions', "Do/Does + subject + verb?", ["Do you speak Spanish?", "Does he live here?"]),
+        'structural_metadata': {
+            "pattern": "SUBJECT + VERB(-s)",
+            "third_person_rule": "Add -s for he/she/it",
+            "special_endings": {
+                "s/ss/sh/ch/x/o": "-es (watches, goes)",
+                "consonant+y": "-ies (studies)"
+            }
+        },
+        'common_error_patterns': [
+            {
+                "error": "He work here",
+                "rule": "Add -s for third person singular",
+                "correction": "He works here"
+            }
         ]
     },
+    
     {
-        'slug': 'a1-articles',
-        'name': 'Articles (a, an, the)',
-        'name_es': 'Artículos',
-        'order': 3,
-        'description': 'Palabras que van antes de sustantivos.',
-        'pattern': 'a/an + singular noun, the + specific noun',
+        'slug': 'a-an-articles',
+        'name': 'A/An Articles',
+        'level': 'A1',
+        'grammatical_category': 'article',
+        'form': 'a + consonant sound, an + vowel sound',
+        'meaning_en': 'Indefinite articles (one, any)',
+        'meaning_es': 'Artículos indefinidos (un, una)',
+        'pedagogical_sequence': 3,
         'examples': [
-            "a book, an apple, the sun",
-            "I have a car",
-            "The teacher is nice"
+            {"en": "a book", "es": "un libro"},
+            {"en": "an apple", "es": "una manzana"},
+            {"en": "a university", "es": "una universidad (sonido de consonante)"}
         ],
-        'rules': [
-            "a → before consonant sounds: a book, a university",
-            "an → before vowel sounds: an apple, an hour",
-            "the → specific or unique things: the moon, the president"
+        'structural_metadata': {
+            "pattern": "a/an + SINGULAR_NOUN",
+            "rule": "Use 'a' before consonant SOUNDS, 'an' before vowel SOUNDS",
+            "tricky_words": ["a university (yoo)", "an hour (our)"]
+        }
+    },
+    
+    {
+        'slug': 'can-infinitive',
+        'name': 'Can + Infinitive',
+        'level': 'A1',
+        'grammatical_category': 'modal_verb',
+        'form': 'Subject + can/can\'t + base verb',
+        'meaning_en': 'Ability, permission, possibility',
+        'meaning_es': 'Habilidad, permiso, posibilidad',
+        'pedagogical_sequence': 4,
+        'examples': [
+            {"en": "I can swim", "es": "Puedo nadar"},
+            {"en": "She can't drive", "es": "Ella no puede conducir"},
+            {"en": "Can you help me?", "es": "¿Puedes ayudarme?"}
         ],
-        'lessons': [
-            ('Indefinite a/an', "Use for general things", ["I want a coffee", "She is an engineer"]),
-            ('Definite the', "Use for specific things", ["The book on the table", "The sun is hot"]),
-            ('No article', "With plurals and uncountable", ["I like music", "Dogs are friendly"]),
+        'structural_metadata': {
+            "pattern": "SUBJECT + can + BASE_VERB",
+            "negative": "can't / cannot",
+            "question": "Can + SUBJECT + VERB?",
+            "no_conjugation": "Same form for all subjects (no -s)"
+        },
+        'common_error_patterns': [
+            {
+                "error": "I can to swim",
+                "rule": "No 'to' after 'can'",
+                "correction": "I can swim"
+            },
+            {
+                "error": "He cans swim",
+                "rule": "No -s in modal verbs",
+                "correction": "He can swim"
+            }
         ]
     },
+    
     {
-        'slug': 'a1-plurals',
-        'name': 'Plural Nouns',
-        'name_es': 'Sustantivos Plurales',
-        'order': 4,
-        'description': 'Cómo formar plurales en inglés.',
-        'pattern': 'noun + s/es',
-        'examples': [
-            "cat → cats",
-            "box → boxes",
-            "baby → babies"
-        ],
-        'rules': [
-            "Most nouns: add -s: book → books",
-            "Nouns ending in s, x, ch, sh: add -es: bus → buses",
-            "Nouns ending in consonant + y: change to -ies: city → cities",
-            "Irregular: man → men, child → children, person → people"
-        ],
-        'lessons': [
-            ('Regular plurals', "Add -s or -es", ["two cats", "three boxes"]),
-            ('Irregular plurals', "Common exceptions", ["children", "people", "teeth"]),
-        ]
-    },
-    {
-        'slug': 'a1-possessives',
+        'slug': 'possessive-adjectives',
         'name': 'Possessive Adjectives',
-        'name_es': 'Adjetivos Posesivos',
-        'order': 5,
-        'description': 'Palabras que indican pertenencia.',
-        'pattern': 'Possessive + noun',
+        'level': 'A1',
+        'grammatical_category': 'possessive',
+        'form': 'Possessive + noun',
+        'meaning_en': 'Ownership, belonging',
+        'meaning_es': 'Pertenencia, posesión',
+        'pedagogical_sequence': 5,
         'examples': [
-            "my book, your car, his phone",
-            "This is my house",
-            "Her name is Maria"
+            {"en": "my book", "es": "mi libro"},
+            {"en": "her car", "es": "su coche (de ella)"},
+            {"en": "their house", "es": "su casa (de ellos)"}
         ],
-        'rules': [
-            "I → my",
-            "You → your", 
-            "He → his, She → her, It → its",
-            "We → our, They → their"
-        ],
-        'lessons': [
-            ('Singular possessives', "my, your, his, her, its", ["my name", "her car"]),
-            ('Plural possessives', "our, their", ["our house", "their children"]),
-        ]
+        'structural_metadata': {
+            "pattern": "POSSESSIVE + NOUN",
+            "forms": {
+                "I": "my",
+                "you": "your",
+                "he": "his",
+                "she": "her",
+                "it": "its",
+                "we": "our",
+                "they": "their"
+            }
+        }
     },
+    
     {
-        'slug': 'a1-demonstratives',
-        'name': 'Demonstratives',
-        'name_es': 'Demostrativos',
-        'order': 6,
-        'description': 'This, that, these, those - para señalar objetos.',
-        'pattern': 'this/that + singular, these/those + plural',
-        'examples': [
-            "This is my phone",
-            "That book is interesting",
-            "These are my friends"
-        ],
-        'rules': [
-            "this/these → near (aquí)",
-            "that/those → far (allá)",
-            "this/that → singular",
-            "these/those → plural"
-        ],
-        'lessons': [
-            ('Near: this/these', "Things close to you", ["This is delicious", "These shoes are new"]),
-            ('Far: that/those', "Things far from you", ["That car is expensive", "Those people are nice"]),
-        ]
-    },
-    {
-        'slug': 'a1-there-is-are',
+        'slug': 'there-is-are',
         'name': 'There is / There are',
-        'name_es': 'Hay (singular/plural)',
-        'order': 7,
-        'description': 'Para decir que algo existe o está en un lugar.',
-        'pattern': 'There is + singular / There are + plural',
+        'level': 'A1',
+        'grammatical_category': 'auxiliary',
+        'form': 'There is + singular / There are + plural',
+        'meaning_en': 'Existence, location',
+        'meaning_es': 'Existencia, ubicación (hay)',
+        'pedagogical_sequence': 6,
         'examples': [
-            "There is a book on the table",
-            "There are three cats in the garden"
+            {"en": "There is a book", "es": "Hay un libro"},
+            {"en": "There are three cats", "es": "Hay tres gatos"}
         ],
-        'rules': [
-            "There is → singular or uncountable: There is milk",
-            "There are → plural: There are two chairs",
-            "Negative: There isn't / There aren't",
-            "Question: Is there...? / Are there...?"
-        ],
-        'lessons': [
-            ('Affirmative', "There is/are", ["There is a park nearby", "There are many students"]),
-            ('Negative & Questions', "There isn't, Is there?", ["Is there a bathroom?", "There aren't any problems"]),
-        ]
+        'structural_metadata': {
+            "pattern": "There is/are + NOUN/SUBJECT",
+            "singular": "There is + singular/uncountable",
+            "plural": "There are + plural",
+            "negative": "There isn't / There aren't",
+            "question": "Is there...? / Are there...?"
+        }
     },
+    
     {
-        'slug': 'a1-can-cant',
-        'name': 'Can / Can\'t',
-        'name_es': 'Poder / No poder',
-        'order': 8,
-        'description': 'Para hablar de habilidades y permisos.',
-        'pattern': 'Subject + can/can\'t + verb (base form)',
+        'slug': 'demonstratives',
+        'name': 'This / That / These / Those',
+        'level': 'A1',
+        'grammatical_category': 'pronoun',
+        'form': 'this/that + singular, these/those + plural',
+        'meaning_en': 'Pointing, showing',
+        'meaning_es': 'Señalar, demostrar',
+        'pedagogical_sequence': 7,
         'examples': [
-            "I can swim",
-            "She can't drive",
-            "Can you help me?"
+            {"en": "This is my phone", "es": "Este es mi teléfono"},
+            {"en": "Those are nice", "es": "Esos son bonitos"}
         ],
-        'rules': [
-            "Can is the same for all subjects (no 's')",
-            "Can't = cannot (negative)",
-            "Can + verb (no 'to'): I can swim (NOT: I can to swim)"
-        ],
-        'lessons': [
-            ('Ability', "Talk about skills", ["I can play guitar", "She can speak French"]),
-            ('Permission & Requests', "Ask for permission", ["Can I use your phone?", "Can you open the door?"]),
-        ]
+        'structural_metadata': {
+            "near_singular": "this",
+            "near_plural": "these",
+            "far_singular": "that",
+            "far_plural": "those"
+        }
     },
+    
     {
-        'slug': 'a1-basic-questions',
-        'name': 'Question Words',
-        'name_es': 'Palabras interrogativas',
-        'order': 9,
-        'description': 'What, Where, When, Who, Why, How.',
-        'pattern': 'Question word + auxiliary + subject + verb?',
-        'examples': [
-            "What is your name?",
-            "Where do you live?",
-            "How are you?"
-        ],
-        'rules': [
-            "What = Qué",
-            "Where = Dónde",
-            "When = Cuándo",
-            "Who = Quién",
-            "Why = Por qué",
-            "How = Cómo"
-        ],
-        'lessons': [
-            ('What & Where', "Things and places", ["What is this?", "Where is the bathroom?"]),
-            ('Who & When', "People and time", ["Who is she?", "When is the party?"]),
-            ('Why & How', "Reasons and manner", ["Why are you sad?", "How do you do it?"]),
-        ]
-    },
-    {
-        'slug': 'a1-imperatives',
-        'name': 'Imperatives',
-        'name_es': 'Imperativos',
-        'order': 10,
-        'description': 'Dar órdenes, instrucciones y consejos.',
-        'pattern': 'Verb (base form) + complement',
-        'examples': [
-            "Open the door",
-            "Sit down, please",
-            "Don't touch that!"
-        ],
-        'rules': [
-            "No subject needed",
-            "Use base form of verb",
-            "Negative: Don't + verb",
-            "Add 'please' to be polite"
-        ],
-        'lessons': [
-            ('Affirmative commands', "Do something", ["Come here", "Listen carefully"]),
-            ('Negative commands', "Don't do something", ["Don't run", "Don't be late"]),
-        ]
-    },
-    {
-        'slug': 'a1-prepositions-place',
+        'slug': 'prepositions-place',
         'name': 'Prepositions of Place',
-        'name_es': 'Preposiciones de lugar',
-        'order': 11,
-        'description': 'In, on, at, under, next to, between.',
-        'pattern': 'noun/pronoun + preposition + place',
+        'level': 'A1',
+        'grammatical_category': 'preposition',
+        'form': 'in/on/at + location',
+        'meaning_en': 'Location, position',
+        'meaning_es': 'Ubicación, posición',
+        'pedagogical_sequence': 8,
         'examples': [
-            "The book is on the table",
-            "She lives in Madrid",
-            "I'm at the office"
+            {"en": "in the box", "es": "en la caja"},
+            {"en": "on the table", "es": "sobre la mesa"},
+            {"en": "at home", "es": "en casa"}
         ],
-        'rules': [
-            "in → inside: in the box, in the city",
-            "on → surface: on the table, on the wall",
-            "at → specific point: at home, at work, at the station"
+        'structural_metadata': {
+            "in": "inside, enclosed spaces (in the room, in Madrid)",
+            "on": "surface contact (on the table, on the wall)",
+            "at": "specific point/location (at home, at the station)"
+        }
+    },
+    
+    {
+        'slug': 'question-words',
+        'name': 'Question Words (What, Where, When, etc.)',
+        'level': 'A1',
+        'grammatical_category': 'question_form',
+        'form': 'Question word + auxiliary + subject + verb?',
+        'meaning_en': 'Asking for information',
+        'meaning_es': 'Preguntar por información',
+        'pedagogical_sequence': 9,
+        'examples': [
+            {"en": "What is your name?", "es": "¿Cuál es tu nombre?"},
+            {"en": "Where do you live?", "es": "¿Dónde vives?"},
+            {"en": "When is the party?", "es": "¿Cuándo es la fiesta?"}
         ],
-        'lessons': [
-            ('In, On, At', "Basic positions", ["in the room", "on the desk", "at school"]),
-            ('Other prepositions', "Under, next to, between", ["under the bed", "next to me", "between us"]),
+        'structural_metadata': {
+            "what": "qué/cuál",
+            "where": "dónde",
+            "when": "cuándo",
+            "who": "quién",
+            "why": "por qué",
+            "how": "cómo"
+        }
+    },
+    
+    {
+        'slug': 'imperatives',
+        'name': 'Imperatives',
+        'level': 'A1',
+        'grammatical_category': 'tense',
+        'form': 'Base verb (+ complement)',
+        'meaning_en': 'Commands, instructions, requests',
+        'meaning_es': 'Órdenes, instrucciones, peticiones',
+        'pedagogical_sequence': 10,
+        'examples': [
+            {"en": "Open the door", "es": "Abre la puerta"},
+            {"en": "Don't run", "es": "No corras"},
+            {"en": "Please sit down", "es": "Por favor siéntate"}
+        ],
+        'structural_metadata': {
+            "pattern": "VERB (+ complement)",
+            "negative": "Don't + VERB",
+            "polite": "Please + VERB / VERB + please"
+        }
+    },
+    
+    {
+        'slug': 'plural-nouns',
+        'name': 'Plural Nouns',
+        'level': 'A1',
+        'grammatical_category': 'article',
+        'form': 'noun + s/es/ies',
+        'meaning_en': 'More than one',
+        'meaning_es': 'Más de uno',
+        'pedagogical_sequence': 11,
+        'examples': [
+            {"en": "cat → cats", "es": "gato → gatos"},
+            {"en": "box → boxes", "es": "caja → cajas"},
+            {"en": "baby → babies", "es": "bebé → bebés"}
+        ],
+        'structural_metadata': {
+            "regular": "Add -s (books, cats)",
+            "s_sh_ch_x": "Add -es (boxes, watches)",
+            "consonant_y": "Change y to -ies (baby → babies)",
+            "irregular": ["man→men", "child→children", "person→people"]
+        }
+    },
+    
+    {
+        'slug': 'adverbs-frequency',
+        'name': 'Adverbs of Frequency',
+        'level': 'A1',
+        'grammatical_category': 'adverb',
+        'form': 'Subject + adverb + verb / Subject + be + adverb',
+        'meaning_en': 'How often something happens',
+        'meaning_es': 'Qué tan seguido ocurre algo',
+        'pedagogical_sequence': 12,
+        'examples': [
+            {"en": "I always drink coffee", "es": "Siempre tomo café"},
+            {"en": "She usually works late", "es": "Ella usualmente trabaja tarde"},
+            {"en": "They are never late", "es": "Nunca llegan tarde"}
+        ],
+        'structural_metadata': {
+            "pattern": "SUBJECT + ADVERB + VERB / SUBJECT + BE + ADVERB",
+            "frequency_scale": {
+                "always": "100% - siempre",
+                "usually": "80% - usualmente",
+                "often": "60% - a menudo",
+                "sometimes": "40% - a veces",
+                "rarely": "20% - raramente",
+                "never": "0% - nunca"
+            },
+            "position_with_be": "After BE verb (I am always happy)",
+            "position_with_other_verbs": "Before main verb (I always eat breakfast)"
+        },
+        'common_error_patterns': [
+            {
+                "error": "I eat always breakfast",
+                "rule": "Adverb goes before main verb",
+                "correction": "I always eat breakfast"
+            },
+            {
+                "error": "She always is late",
+                "rule": "Adverb goes after BE verb",
+                "correction": "She is always late"
+            }
+        ]
+    },
+    
+    {
+        'slug': 'like-love-hate-noun',
+        'name': 'Like / Love / Hate + Noun',
+        'level': 'A1',
+        'grammatical_category': 'verb',
+        'form': 'Subject + like/love/hate + noun',
+        'meaning_en': 'Express preferences and feelings',
+        'meaning_es': 'Expresar preferencias y sentimientos',
+        'pedagogical_sequence': 13,
+        'examples': [
+            {"en": "I like pizza", "es": "Me gusta la pizza"},
+            {"en": "She loves music", "es": "Ella ama la música"},
+            {"en": "They hate cold weather", "es": "Ellos odian el clima frío"}
+        ],
+        'structural_metadata': {
+            "pattern": "SUBJECT + like/love/hate + NOUN",
+            "conjugation": {
+                "I/you/we/they": "like/love/hate",
+                "he/she/it": "likes/loves/hates"
+            },
+            "intensity": {
+                "love": "very positive",
+                "like": "positive",
+                "hate": "very negative"
+            },
+            "also_with_gerund": "Can also use -ing form (I like swimming)"
+        },
+        'common_error_patterns': [
+            {
+                "error": "He like pizza",
+                "rule": "Add -s for third person singular",
+                "correction": "He likes pizza"
+            }
+        ]
+    },
+    
+    {
+        'slug': 'simple-adjectives',
+        'name': 'Simple Adjectives',
+        'level': 'A1',
+        'grammatical_category': 'adjective',
+        'form': 'adjective + noun / be + adjective',
+        'meaning_en': 'Describe qualities and characteristics',
+        'meaning_es': 'Describir cualidades y características',
+        'pedagogical_sequence': 14,
+        'examples': [
+            {"en": "a big house", "es": "una casa grande"},
+            {"en": "The car is small", "es": "El carro es pequeño"},
+            {"en": "good food", "es": "comida buena"},
+            {"en": "It's bad weather", "es": "Es mal clima"}
+        ],
+        'structural_metadata': {
+            "pattern": "ADJ + NOUN / BE + ADJECTIVE",
+            "basic_adjectives": {
+                "size": ["big", "small", "large", "little"],
+                "quality": ["good", "bad", "nice", "beautiful"],
+                "age": ["new", "old", "young"],
+                "color": ["red", "blue", "green", "yellow"],
+                "feeling": ["happy", "sad", "tired", "hungry"]
+            },
+            "position": "Before noun OR after BE verb",
+            "no_agreement": "Adjectives don't change form (unlike Spanish)"
+        },
+        'common_error_patterns': [
+            {
+                "error": "a house big",
+                "rule": "Adjective comes before noun in English",
+                "correction": "a big house"
+            },
+            {
+                "error": "bigs houses",
+                "rule": "Adjectives don't have plural form",
+                "correction": "big houses"
+            }
+        ]
+    },
+    
+    {
+        'slug': 'conjunction-and',
+        'name': 'Conjunction: And',
+        'level': 'A1',
+        'grammatical_category': 'conjunction',
+        'form': 'word/phrase + and + word/phrase',
+        'meaning_en': 'Connect similar ideas, add information',
+        'meaning_es': 'Conectar ideas similares, agregar información',
+        'pedagogical_sequence': 15,
+        'examples': [
+            {"en": "I like coffee and tea", "es": "Me gusta el café y el té"},
+            {"en": "She is smart and kind", "es": "Ella es inteligente y amable"},
+            {"en": "We work and study", "es": "Trabajamos y estudiamos"}
+        ],
+        'structural_metadata': {
+            "pattern": "ITEM1 + and + ITEM2",
+            "usage": "Connect nouns, adjectives, verbs, or sentences",
+            "meaning": "Addition, combination",
+            "examples_types": {
+                "nouns": "bread and butter",
+                "adjectives": "happy and healthy",
+                "verbs": "read and write",
+                "sentences": "I like pizza and my brother likes pasta"
+            }
+        }
+    },
+    
+    {
+        'slug': 'conjunction-but',
+        'name': 'Conjunction: But',
+        'level': 'A1',
+        'grammatical_category': 'conjunction',
+        'form': 'sentence + but + contrasting sentence',
+        'meaning_en': 'Show contrast or opposition',
+        'meaning_es': 'Mostrar contraste u oposición',
+        'pedagogical_sequence': 16,
+        'examples': [
+            {"en": "I like coffee but I don't like tea", "es": "Me gusta el café pero no me gusta el té"},
+            {"en": "She is small but strong", "es": "Ella es pequeña pero fuerte"},
+            {"en": "It's expensive but good", "es": "Es caro pero bueno"}
+        ],
+        'structural_metadata': {
+            "pattern": "STATEMENT1 + but + CONTRASTING_STATEMENT2",
+            "usage": "Connect contrasting ideas",
+            "meaning": "Contrast, opposition, exception",
+            "difference_from_and": "'and' adds similar ideas, 'but' shows contrast",
+            "examples_types": {
+                "adjectives": "big but light",
+                "sentences": "I'm tired but happy",
+                "preferences": "I like it but she doesn't"
+            }
+        },
+        'common_error_patterns': [
+            {
+                "error": "I like coffee but also tea",
+                "rule": "'but' is for contrast, use 'and' for addition",
+                "correction": "I like coffee and tea"
+            }
         ]
     },
 ]
 
-# Create topics and lessons
+# Create grammar units
+created_count = 0
+updated_count = 0
+
 for data in A1_GRAMMAR:
-    topic, created = GrammarTopic.objects.update_or_create(
+    grammar, created = GrammarUnit.objects.update_or_create(
         slug=data['slug'],
+        target_language='en',  # English grammar units
         defaults={
             'name': data['name'],
-            'name_es': data['name_es'],
-            'level': 'A1',
-            'order': data['order'],
-            'description': data['description'],
-            'pattern': data['pattern'],
-            'examples': data['examples'],
-            'rules': data['rules'],
-            'exceptions': [],
-            'estimated_time': 30,
+            'level': data['level'],
+            'grammatical_category': data['grammatical_category'],
+            'form': data['form'],
+            'meaning_en': data['meaning_en'],
+            'meaning_es': data['meaning_es'],
+            'pedagogical_sequence': data['pedagogical_sequence'],
+            'examples': data.get('examples', []),
+            'structural_metadata': data.get('structural_metadata', {}),
+            'common_error_patterns': data.get('common_error_patterns', []),
+            'is_universal': True,
+            'source': 'manual',
         }
     )
     
-    # Create lessons
-    for i, (lesson_name, explanation, examples) in enumerate(data['lessons'], 1):
-        GrammarLesson.objects.update_or_create(
-            topic=topic,
-            order=i,
-            defaults={
-                'name': lesson_name,
-                'explanation': explanation,
-                'examples': examples,
-                'exercises': [],
-                'estimated_time': 10,
-            }
-        )
-    
-    status = "✅ Created" if created else "🔄 Updated"
-    print(f"  {status}: {topic}")
+    if created:
+        created_count += 1
+        print(f"  ✅ Created: {grammar}")
+    else:
+        updated_count += 1
+        print(f"  🔄 Updated: {grammar}")
 
-print(f"\n📚 Total A1 topics: {GrammarTopic.objects.filter(level='A1').count()}")
-print(f"📖 Total A1 lessons: {GrammarLesson.objects.filter(topic__level='A1').count()}")
-print("\n✅ A1 Grammar seeded!")
+print(f"\n📊 Summary:")
+print(f"  ✅ Created: {created_count}")
+print(f"  🔄 Updated: {updated_count}")
+print(f"  📚 Total A1 Grammar Units: {GrammarUnit.objects.filter(level='A1').count()}")
+print("\n✅ A1 Grammar seeded successfully!")

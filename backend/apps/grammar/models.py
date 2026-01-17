@@ -29,7 +29,14 @@ class GrammarUnit(models.Model):
         ('C1', 'C1'), ('C2', 'C2'),
     ]
     
+    LANGUAGE_CHOICES = [
+        ('en', 'English'),
+        ('de', 'German / Deutsch'),
+        ('fr', 'French / Français'),
+    ]
+    
     CATEGORY_CHOICES = [
+        # Universal categories (all languages)
         ('modal_verb', 'Modal Verbs'),
         ('article', 'Articles'),
         ('tense', 'Tenses'),
@@ -42,15 +49,33 @@ class GrammarUnit(models.Model):
         ('possessive', 'Possessives'),
         ('comparative', 'Comparatives/Superlatives'),
         ('gerund_infinitive', 'Gerunds & Infinitives'),
+        ('adverb', 'Adverbs'),
+        ('adjective', 'Adjectives'),
+        ('verb', 'Verbs'),
+        
+        # Language-specific categories (primarily for DE, FR)
+        ('gender', 'Grammatical Gender'),              # FR: M/F, DE: M/F/N
+        ('case_system', 'Case System'),                # DE: Nominative, Accusative, Dative, Genitive
+        ('declension', 'Declension'),                  # DE: Article/Adjective declension
+        ('verb_mood', 'Verb Moods'),                   # FR: Subjunctive, Conditional, etc.
+        ('adjective_agreement', 'Adjective Agreement'),# FR: Gender/number agreement
+        ('word_order', 'Word Order'),                  # DE: V2, SOV in subordinates
     ]
     
     # ==========================================
     # IDENTIFICADORES
     # ==========================================
     slug = models.SlugField(
-        unique=True,
         db_index=True,
-        help_text='Identificador único (ej: can-infinitive, a-an-articles)'
+        help_text='Identificador único (ej: can-infinitive, a-an-articles, verbe-etre, artikel-der-die-das)'
+    )
+    
+    target_language = models.CharField(
+        max_length=5,
+        default='en',
+        choices=LANGUAGE_CHOICES,
+        db_index=True,
+        help_text='Idioma objetivo que este grammar unit enseña (ISO 639-1 code)'
     )
     
     name = models.CharField(
@@ -164,16 +189,19 @@ class GrammarUnit(models.Model):
     
     class Meta:
         db_table = 'grammar_unit'
-        ordering = ['pedagogical_sequence', 'level']
+        ordering = ['target_language', 'pedagogical_sequence', 'level']
         verbose_name = 'Grammar Unit'
         verbose_name_plural = 'Grammar Units'
+        unique_together = [['slug', 'target_language']]  # Permite mismo slug en diferentes idiomas
         indexes = [
             models.Index(fields=['level', 'grammatical_category']),
             models.Index(fields=['pedagogical_sequence']),
+            models.Index(fields=['target_language', 'level']),
+            models.Index(fields=['target_language', 'grammatical_category']),
         ]
     
     def __str__(self):
-        return f"[{self.level}] {self.name}"
+        return f"[{self.target_language.upper()}] [{self.level}] {self.name}"
 
 
 class GrammarInMilestone(models.Model):
@@ -211,9 +239,10 @@ class GrammarInMilestone(models.Model):
     # ==========================================
     # CONTEXTUALIZACIÓN
     # ==========================================
-    context_example = models.TextField(
+    context_example = models.JSONField(
+        default=list,
         blank=True,
-        help_text='Ejemplo en contexto específico (ej: Can I have a coffee?)'
+        help_text='Ejemplos: ["Example 1", "Example 2"]'
     )
     
     # ==========================================
