@@ -11,7 +11,7 @@ from apps.scenarios.models import Scenario
 from apps.users.models import LearningProfile
 
 from .level_filter import LevelFilter
-from .ai_ranker import AIRanker
+from .scenario_smart_sorter import ScenarioSmartSorter
 
 
 @dataclass
@@ -44,7 +44,7 @@ class RecommendationEngine:
         self.level_filter = LevelFilter()
         
         if use_ai:
-            self.ai_ranker = AIRanker(model=ai_model)
+            self.ai_ranker = ScenarioSmartSorter(model=ai_model)
         else:
             self.ai_ranker = None
     

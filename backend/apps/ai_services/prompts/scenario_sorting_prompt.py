@@ -11,7 +11,7 @@ Your task is to rank learning scenarios based on user preferences.
 Always respond in valid JSON format."""
 
 
-SCENARIO_RANKING_PROMPT = """
+SCENARIO_SORTING_PROMPT = """
 Given this user profile:
 - CEFR Level: {cefr_level}
 - Learning Goals: {goals}
@@ -84,7 +84,7 @@ def format_scenario_ranking_prompt(
         tags_str = ', '.join(s.get('tags', []))
         scenarios_lines.append(f"- ID {s['id']}: {s['name']} (tags: {tags_str})")
     
-    return SCENARIO_RANKING_PROMPT.format(
+    return SCENARIO_SORTING_PROMPT.format(
         cefr_level=user_profile.get('cefr_level', 'A1'),
         goals=goals_str,
         interests=interests_str,

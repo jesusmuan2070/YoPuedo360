@@ -11,6 +11,7 @@ import RegisterPage from './pages/RegisterPage';
 import MascotSelectPage from './pages/MascotSelectPage';
 import WorldMapPage from './pages/WorldMapPage';
 import ScenarioPage from './pages/ScenarioPage';
+import LessonPage from './pages/LessonPage';
 import MascotBuddy from './components/game/MascotBuddy';
 import './index.css';
 
@@ -35,6 +36,7 @@ function App() {
           {/* Main Game */}
           <Route path="/world" element={<WorldMapPage />} />
           <Route path="/scenario/:slug" element={<ScenarioPage />} />
+          <Route path="/lesson/:milestoneId" element={<LessonPage />} />
 
           {/* Catch all */}
           <Route path="*" element={<Navigate to="/" replace />} />

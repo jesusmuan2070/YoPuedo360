@@ -4,7 +4,7 @@ from .base import BaseRecommender
 from .level_filter import LevelFilter
 from .goal_ranker import GoalRanker
 from .interest_matcher import InterestMatcher
-from .ai_ranker import AIRanker
+from .scenario_smart_sorter import ScenarioSmartSorter
 
 __all__ = [
     'RecommendationEngine',
@@ -12,5 +12,5 @@ __all__ = [
     'LevelFilter',
     'GoalRanker',
     'InterestMatcher',
-    'AIRanker',
+    'ScenarioSmartSorter',
 ]

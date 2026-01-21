@@ -114,4 +114,25 @@ export const progressAPI = {
         }),
 };
 
+// Orchestrator API (Intent-First Learning)
+export const orchestratorAPI = {
+    // Get all scenarios
+    getScenarios: () => api.get('/scenarios/'),
+
+    // Get scenario with milestones and progress
+    getScenarioProgress: (slug) => api.get(`/scenarios/${slug}/progress/`),
+
+    // Get learning content for a milestone (uses orchestrator)
+    getMilestoneContent: (milestoneId) => api.get(`/milestones/${milestoneId}/content/`),
+
+    // Start a milestone
+    startMilestone: (milestoneId) => api.post(`/milestones/${milestoneId}/start/`),
+
+    // Complete an intent
+    completeIntent: (intentId, data) => api.post(`/intents/${intentId}/complete/`, data),
+
+    // Get user's overall progress
+    getUserProgress: () => api.get('/progress/'),
+};
+
 export default api;

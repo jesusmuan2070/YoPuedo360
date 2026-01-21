@@ -27,6 +27,9 @@ urlpatterns = [
     # Progress API
     path('api/v1/progress/', include('apps.learning_path.urls')),
     
+    # Intents API (Learning Orchestrator)
+    path('api/v1/', include('apps.intents.urls')),
+    
     # Future: Other APIs
     # path('api/v1/users/', include('apps.users.urls')),
     # path('api/v1/content/', include('apps.content.urls')),

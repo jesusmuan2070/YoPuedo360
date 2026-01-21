@@ -6,14 +6,14 @@ Uses OpenAI to intelligently rank scenarios based on user profile
 from typing import List, Dict, Any
 from apps.scenarios.models import Scenario
 from apps.ai_services.clients.openai_client import OpenAIClient
-from apps.ai_services.prompts.scenario_ranking import (
+from apps.ai_services.prompts.scenario_sorting_prompt import (
     SCENARIO_RANKING_SYSTEM,
     format_scenario_ranking_prompt
 )
 from .base import BaseRecommender
 
 
-class AIRanker(BaseRecommender):
+class ScenarioSmartSorter(BaseRecommender):
     """
     Uses AI to rank scenarios based on user profile.
     Considers profession, interests, hobbies, and goals intelligently.
@@ -25,7 +25,7 @@ class AIRanker(BaseRecommender):
     
     @property
     def name(self) -> str:
-        return "AIRanker"
+        return "ScenarioSmartSorter"
     
     @property
     def client(self) -> OpenAIClient:
@@ -79,7 +79,7 @@ class AIRanker(BaseRecommender):
             return ranked_scenarios
             
         except Exception as e:
-            print(f"AIRanker error: {e}")
+            print(f"ScenarioSmartSorter error: {e}")
             # Fallback to original order
             return scenarios
     

@@ -1,9 +1,17 @@
 """
 Complete seed - All 25 scenarios from the plan
-Run with: Get-Content scripts\seed_all_scenarios.py | python manage.py shell
+Run with: python scripts/seed_all_scenarios.py
 """
 
-from apps.memory_palace.models import Tag, Scenario, Milestone
+import os
+import sys
+import django
+
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'yopuedo360.settings')
+django.setup()
+
+from apps.scenarios.models import Tag, Scenario, Milestone
 
 print("🌱 Seeding ALL 25 scenarios...")
 
@@ -50,9 +58,18 @@ all_tags_data = [
     ('interest', 'gaming', '🎮', 'Gaming'),
     ('interest', 'music', '🎵', 'Música'),
     ('interest', 'sports', '⚽', 'Deportes'),
-    ('interest', 'cinema', '🎬', 'Cine'),
+    ('interest', 'cinema', '🎬', 'Cine y Series'),
     ('interest', 'cooking', '👨‍🍳', 'Cocina'),
-    ('interest', 'art', '🎨', 'Arte'),
+    ('interest', 'art', '🎨', 'Arte y Diseño'),
+    ('interest', 'fashion', '👗', 'Moda'),
+    ('interest', 'dance', '💃', 'Baile'),
+    ('interest', 'fitness', '💪', 'Fitness'),
+    ('interest', 'nature', '🌲', 'Naturaleza'),
+    ('interest', 'pets', '🐾', 'Mascotas'),
+    ('interest', 'photography', '📸', 'Fotografía'),
+    ('interest', 'reading', '📚', 'Lectura'),
+    ('interest', 'technology', '💻', 'Tecnología'),
+    ('interest', 'travel', '✈️', 'Viajes'),
     
     # Skills
     ('skill', 'speaking', '🗣️', 'Hablar'),
@@ -99,7 +116,7 @@ scenarios_data = [
         'icon': '☕',
         'description': 'Ordenar comida y bebidas en restaurantes y cafeterías.',
         'difficulty_min': 'A1', 'difficulty_max': 'B1',
-        'tags': ['goal:travel', 'goal:personal', 'domain:food', 'skill:speaking'],
+        'tags': ['goal:travel', 'goal:personal', 'domain:food', 'skill:speaking', 'interest:cooking'],
         'milestones': [
             ('A1', 1, 'Pedir una mesa', 10, 20),
             ('A1', 2, 'Leer el menú', 10, 25),
@@ -116,7 +133,7 @@ scenarios_data = [
         'icon': '🛒',
         'description': 'Comprar en tiendas, preguntar precios y tallas.',
         'difficulty_min': 'A1', 'difficulty_max': 'A2',
-        'tags': ['goal:personal', 'domain:shopping', 'skill:speaking'],
+        'tags': ['goal:personal', 'domain:shopping', 'skill:speaking', 'interest:fashion'],
         'milestones': [
             ('A1', 1, 'Preguntar precio', 10, 15),
             ('A1', 2, 'Pedir una talla', 10, 20),
@@ -266,7 +283,7 @@ scenarios_data = [
         'icon': '🎓',
         'description': 'Vida académica, clases y campus.',
         'difficulty_min': 'B1', 'difficulty_max': 'C1',
-        'tags': ['goal:personal', 'domain:education', 'skill:speaking', 'skill:writing', 'skill:reading'],
+        'tags': ['goal:personal', 'domain:education', 'skill:speaking', 'skill:writing', 'skill:reading', 'interest:reading'],
         'milestones': [
             ('B1', 1, 'Inscribirte a clases', 15, 30),
             ('B1', 2, 'Hablar con profesores', 20, 35),
@@ -350,7 +367,7 @@ scenarios_data = [
         'icon': '🎭',
         'description': 'Discutir arte, música y cultura.',
         'difficulty_min': 'B2', 'difficulty_max': 'C2',
-        'tags': ['goal:personal', 'domain:culture', 'domain:entertainment', 'skill:speaking'],
+        'tags': ['goal:personal', 'domain:culture', 'domain:entertainment', 'skill:speaking', 'interest:art', 'interest:music'],
         'milestones': [
             ('B2', 1, 'Describir obras de arte', 25, 45),
             ('C1', 1, 'Crítica cultural', 30, 55),
@@ -363,7 +380,7 @@ scenarios_data = [
         'icon': '📚',
         'description': 'Leer y discutir literatura.',
         'difficulty_min': 'B2', 'difficulty_max': 'C2',
-        'tags': ['goal:personal', 'domain:literature', 'domain:education', 'skill:reading'],
+        'tags': ['goal:personal', 'domain:literature', 'domain:education', 'skill:reading', 'interest:reading'],
         'milestones': [
             ('B2', 1, 'Resumen de libros', 25, 50),
             ('C1', 1, 'Análisis literario', 30, 60),
@@ -429,7 +446,7 @@ scenarios_data = [
         'icon': '🎮',
         'description': 'Vocabulario de videojuegos y gaming online.',
         'difficulty_min': 'A2', 'difficulty_max': 'B2',
-        'tags': ['goal:personal', 'interest:gaming', 'domain:entertainment', 'domain:technology', 'skill:speaking', 'skill:listening'],
+        'tags': ['goal:personal', 'interest:gaming', 'domain:entertainment', 'domain:technology', 'skill:speaking', 'skill:listening', 'interest:technology'],
         'milestones': [
             ('A2', 1, 'Vocabulario básico de gaming', 15, 30),
             ('B1', 1, 'Comunicación en equipo', 20, 40),
@@ -459,7 +476,7 @@ scenarios_data = [
         'icon': '💇',
         'description': 'Pedir un corte de pelo, tratamientos de belleza.',
         'difficulty_min': 'A2', 'difficulty_max': 'B1',
-        'tags': ['goal:personal', 'goal:travel', 'domain:social', 'skill:speaking'],
+        'tags': ['goal:personal', 'goal:travel', 'domain:social', 'skill:speaking', 'interest:fashion'],
         'milestones': [
             ('A2', 1, 'Pedir cita', 10, 20),
             ('A2', 2, 'Describir qué quieres', 15, 30),
@@ -486,7 +503,7 @@ scenarios_data = [
         'icon': '🏋️',
         'description': 'Inscribirse al gym, ejercicios y deportes.',
         'difficulty_min': 'A2', 'difficulty_max': 'B2',
-        'tags': ['goal:personal', 'interest:sports', 'domain:health', 'skill:speaking'],
+        'tags': ['goal:personal', 'interest:sports', 'domain:health', 'skill:speaking', 'interest:fitness'],
         'milestones': [
             ('A2', 1, 'Inscripción al gym', 15, 25),
             ('A2', 2, 'Partes del cuerpo', 10, 30),
@@ -500,7 +517,7 @@ scenarios_data = [
         'icon': '🎵',
         'description': 'Hablar de música, artistas y eventos.',
         'difficulty_min': 'A2', 'difficulty_max': 'B2',
-        'tags': ['goal:personal', 'interest:music', 'domain:entertainment', 'skill:speaking', 'skill:listening'],
+        'tags': ['goal:personal', 'interest:music', 'domain:entertainment', 'skill:speaking', 'skill:listening', 'interest:dance'],
         'milestones': [
             ('A2', 1, 'Géneros musicales', 10, 25),
             ('A2', 2, 'Tu música favorita', 15, 30),
@@ -514,7 +531,7 @@ scenarios_data = [
         'icon': '📱',
         'description': 'Vocabulario de redes sociales y comunicación digital.',
         'difficulty_min': 'A2', 'difficulty_max': 'B1',
-        'tags': ['goal:personal', 'domain:technology', 'domain:social', 'skill:reading', 'skill:writing'],
+        'tags': ['goal:personal', 'domain:technology', 'domain:social', 'skill:reading', 'skill:writing', 'interest:technology', 'interest:photography'],
         'milestones': [
             ('A2', 1, 'Crear un perfil', 10, 25),
             ('A2', 2, 'Publicar y comentar', 15, 30),
@@ -554,7 +571,7 @@ scenarios_data = [
         'icon': '🐶',
         'description': 'Hablar de mascotas y visitas al veterinario.',
         'difficulty_min': 'A2', 'difficulty_max': 'B1',
-        'tags': ['goal:personal', 'domain:health', 'domain:home', 'skill:speaking'],
+        'tags': ['goal:personal', 'domain:health', 'domain:home', 'skill:speaking', 'interest:pets'],
         'milestones': [
             ('A2', 1, 'Describir tu mascota', 15, 25),
             ('A2', 2, 'En el veterinario', 15, 30),
@@ -616,7 +633,7 @@ scenarios_data = [
         'icon': '🚨',
         'description': 'Comunicación en situaciones de emergencia.',
         'difficulty_min': 'A2', 'difficulty_max': 'B2',
-        'tags': ['goal:travel', 'goal:personal', 'domain:health', 'skill:speaking', 'skill:listening'],
+        'tags': ['goal:travel', 'goal:personal', 'domain:health', 'skill:speaking', 'skill:listening', 'interest:travel'],
         'milestones': [
             ('A2', 1, 'Llamar al 911', 15, 25),
             ('A2', 2, 'Describir una emergencia', 15, 30),
