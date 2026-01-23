@@ -147,11 +147,11 @@ def get_milestone_content(request, milestone_id):
         'target_phrases': content.get('target_phrases', []),
         'supporting_grammar': [
             {
-                'name': grammar.name,
-                'form': grammar.form,
-                'examples': grammar.examples[:2] if grammar.examples else [],  # Universal examples
+                'name': item.grammar.name if hasattr(item, 'grammar') else item.name,
+                'form': item.grammar.form if hasattr(item, 'grammar') else item.form,
+                'examples': (item.context_example if hasattr(item, 'context_example') and item.context_example else (item.grammar.examples if hasattr(item, 'grammar') else item.examples))[:3],
             }
-            for grammar in content.get('supporting_grammar', [])
+            for item in content.get('supporting_grammar', [])
         ],
         'exercises': content.get('exercises', []),
         'progress': content.get('progress', {})

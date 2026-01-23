@@ -31,7 +31,7 @@ urlpatterns = [
     path('api/v1/', include('apps.intents.urls')),
     
     # Future: Other APIs
-    # path('api/v1/users/', include('apps.users.urls')),
+    path('api/v1/users/', include('apps.users.urls')),
     # path('api/v1/content/', include('apps.content.urls')),
     # path('api/v1/worlds/', include('apps.memory_palace.urls')),
     # path('api/v1/avatar/', include('apps.avatar.urls')),

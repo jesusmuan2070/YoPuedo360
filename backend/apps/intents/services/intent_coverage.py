@@ -17,38 +17,39 @@ CORE_INTENTS = [
 INTENT_SCENARIO_MAP = {
     # Identity intents
     'introduce-self': ['greetings', 'airport', 'hotel', 'work', 'social', 
-                       'dating', 'social_media', 'gaming', 'university'],
-    'talk-about-origin': ['greetings', 'airport', 'travel', 'social', 'dating'],
-    'describe-occupation': ['greetings', 'work', 'networking', 'social', 'dating', 'office'],
+                       'dating', 'social_media', 'gaming', 'university', 'job-interview',
+                       'formal_emails', 'office', 'phone', 'presentations'],
+    'talk-about-origin': ['greetings', 'airport', 'travel', 'social', 'dating', 'job-interview'],
+    'describe-occupation': ['greetings', 'work', 'networking', 'social', 'dating', 'office', 'job-interview', 'formal_emails', 'presentations'],
     'talk-about-family': ['greetings', 'social', 'home'],
     
     # Needs & Requests
     'ask-for-something': ['restaurant', 'shopping', 'hotel', 'airport', 
-                          'transport', 'pharmacy', 'bank'],
+                          'transport', 'pharmacy', 'bank', 'office', 'formal_emails'],
     'order-food': ['restaurant', 'cafe', 'airplane', 'hotel', 'cooking'],
-    'ask-permission': ['restaurant', 'hotel', 'work', 'social', 'office'],
+    'ask-permission': ['restaurant', 'hotel', 'work', 'social', 'office', 'formal_emails'],
     
     # Possession & Existence
     'express-possession': ['shopping', 'airport', 'hotel', 'customs', 
-                          'home', 'transport', 'pets'],
+                          'home', 'transport', 'pets', 'office', 'bank'],
     'express-existence': ['shopping', 'hotel', 'city', 'directions', 'home'],
     
     # Location
     'ask-where': ['shopping', 'airport', 'hotel', 'city', 'street', 
-                  'directions', 'transport', 'university'],
+                  'directions', 'transport', 'university', 'office', 'bank'],
     'describe-location': ['directions', 'city', 'hotel', 'home'],
     
     # Shopping
     'ask-price': ['shopping', 'restaurant', 'market', 'taxi', 'transport', 'salon'],
-    'express-quantity': ['shopping', 'restaurant', 'market', 'cooking'],
-    'choose-item': ['shopping', 'restaurant', 'market', 'cooking'],
+    'express-quantity': ['shopping', 'restaurant', 'market', 'cooking', 'bank'],
+    'choose-item': ['shopping', 'restaurant', 'market', 'cooking', 'office', 'bank'],
     
     # Time
-    'tell-time': ['work', 'appointments', 'travel', 'transport', 'office'],
+    'tell-time': ['work', 'appointments', 'travel', 'transport', 'office', 'job-interview', 'phone', 'presentations', 'teaching'],
     'talk-about-daily-routine': ['work', 'social', 'health', 'home', 'gym', 'office'],
     
     # Ability & Preference
-    'express-ability': ['work', 'social', 'sports', 'language', 'gaming', 'gym'],
+    'express-ability': ['work', 'social', 'sports', 'language', 'gaming', 'gym', 'job-interview'],
     'express-likes': ['restaurant', 'social', 'hobbies', 'movies', 'music', 
                       'cooking', 'gaming', 'pets', 'dating'],
     
@@ -57,21 +58,21 @@ INTENT_SCENARIO_MAP = {
     'describe-objects': ['shopping', 'lost-found', 'police', 'home', 'cooking'],
     
     # Survival
-    'make-simple-statement-now': ['work', 'social', 'phone', 'gaming', 'office'],
+    'make-simple-statement-now': ['work', 'social', 'phone', 'gaming', 'office', 'formal_emails', 'presentations', 'teaching', 'bank'],
     'express-simple-opinion': ['restaurant', 'shopping', 'social', 'movies', 
-                               'news', 'gaming', 'culture'],
+                               'news', 'gaming', 'culture', 'work-meetings', 'debate'],
     
     # ========================================
     # A2 INTENTS
     # ========================================
     
     # Past & Time (A2)
-    'talk-about-past-experience': ['social', 'work', 'travel', 'university', 'dating'],
+    'talk-about-past-experience': ['social', 'work', 'travel', 'university', 'dating', 'job-interview'],
     'talk-about-past-habit': ['social', 'work', 'home'],
     'talk-about-past-events': ['social', 'work', 'travel', 'news'],
-    'talk-about-dates': ['work', 'appointments', 'travel', 'social'],
+    'talk-about-dates': ['work', 'appointments', 'travel', 'social', 'job-interview'],
     'talk-about-plans': ['social', 'work', 'travel', 'appointments'],
-    'talk-about-future-intentions': ['work', 'social', 'university'],
+    'talk-about-future-intentions': ['work', 'social', 'university', 'job-interview'],
     
     # Daily Life (A2)
     'talk-about-free-time': ['social', 'hobbies', 'sports', 'gym', 'dating'],

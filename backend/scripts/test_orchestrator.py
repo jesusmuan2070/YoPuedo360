@@ -15,7 +15,7 @@ django.setup()
 
 from apps.scenarios.models import Scenario, Milestone
 from apps.intents.services.orchestrator import orchestrator
-from apps.users.models import User
+from apps.users.models import User, LearningProfile
 
 
 print("🧪 Probando Learning Orchestrator...\n")
@@ -89,6 +89,17 @@ if created:
 else:
     print("✅ Usuario existente: test_orchestrator")
 
+# Ensure LearningProfile exists
+LearningProfile.objects.get_or_create(
+    user=user,
+    defaults={
+        'target_language': 'en',
+        'native_language': 'es',
+        'cefr_level': 'A1'
+    }
+)
+print("✅ LearningProfile verificado")
+
 # ============================================
 # TEST 4: Siguiente Intent (sin progreso)
 # ============================================
@@ -120,7 +131,8 @@ print("\n⏳ Generando con AI (puede tomar 1-2 segundos)...\n")
 try:
     intent_realization = orchestrator._get_or_generate_intent_realization(
         next_intent,
-        milestone
+        milestone,
+        user
     )
     
     print("✅ IntentRealization obtenida/generada")
@@ -171,6 +183,14 @@ try:
     print(f"  target_phrases: {len(content.get('target_phrases', []))} frases")
     print(f"  supporting_grammar: {len(content.get('supporting_grammar', []))} unidades")
     print(f"  exercises: {len(content.get('exercises', []))} ejercicios")
+    
+    if content.get('supporting_grammar'):
+        first_gram = content['supporting_grammar'][0]
+        print(f"    First Grammar Type: {type(first_gram).__name__}")
+        if hasattr(first_gram, 'context_example'):
+            print(f"    AI Examples found: {first_gram.context_example}")
+        else:
+            print(f"    WARNING: No context_example found (likely GrammarUnit)")
     print(f"  progress: {content.get('progress', {})}")
     
 except Exception as e:

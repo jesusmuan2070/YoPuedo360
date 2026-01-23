@@ -93,14 +93,14 @@ class LearningOrchestrator:
         # PASO 4: Identificar grammar necesaria
         required_grammar = self._get_required_grammar(next_intent, milestone)
         
-        # PASO 5: Grammar es UNIVERSAL - usar ejemplos universales (no generar)
-        # NO generamos grammar con AI, usamos los ejemplos universales
+        # PASO 5: Obtener/generar ejemplos de grammar contextuales
+        grammar_examples = self._get_or_generate_grammar_examples(required_grammar, milestone)
         
         # PASO 6: Ensamblar contenido
         return {
             'current_intent': intent_realization,
             'target_phrases': intent_realization.example_chunks,
-            'supporting_grammar': required_grammar,  # GrammarUnits con .examples
+            'supporting_grammar': grammar_examples,
             'exercises': self._generate_exercises(intent_realization),
             'progress': self._get_progress(user, milestone)
         }
