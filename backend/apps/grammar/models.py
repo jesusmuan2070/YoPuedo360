@@ -8,6 +8,8 @@ from django.contrib.auth import get_user_model
 from django.utils import timezone
 from datetime import timedelta
 
+from apps.users.services.xp_service import XPService
+
 User = get_user_model()
 
 
@@ -390,7 +392,7 @@ class UserGrammarProgress(models.Model):
     
     def process_review(self, quality):
         """
-        Procesa el resultado de un repaso usando algoritmo SM-2
+        Procesa el resultado de un repaso usando algoritmo SM-2 y otorga XP.
         
         Args:
             quality (int): Calidad de la respuesta (0-5)
@@ -403,6 +405,7 @@ class UserGrammarProgress(models.Model):
         """
         from datetime import date
         
+        old_status = self.status
         self.last_reviewed = timezone.now()
         
         if quality >= 3:
@@ -442,6 +445,16 @@ class UserGrammarProgress(models.Model):
         # Calcular próxima fecha de repaso
         self.next_review = date.today() + timedelta(days=self.interval)
         self.save()
+        
+        # Award XP via XPService
+        cefr_level = getattr(self.grammar, 'level', 'A1') or 'A1'
+        
+        if quality >= 3:  # Correct review
+            XPService.award_word_reviewed_xp(self.user, cefr_level)  # Same XP as vocab review
+        
+        # Bonus XP for reaching 'mastered' status
+        if self.status == 'mastered' and old_status != 'mastered':
+            XPService.award_grammar_learned_xp(self.user, cefr_level)
     
     @classmethod
     def get_grammar_for_review(cls, user, limit=10):

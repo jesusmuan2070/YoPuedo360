@@ -180,9 +180,43 @@ AI_TASK_MAPPING = {
 LEARNING_CONFIG = {
     'default_daily_goal_minutes': 15,
     'max_review_items_per_session': 20,
-    'xp_per_exercise': 10,
-    'xp_per_lesson': 25,
     'streak_freeze_cost': 50,  # XP cost for streak freeze
+    
+    # XP Base Values (before CEFR multiplier)
+    'xp_base': {
+        'exercise_complete': 10,      # + up to 40 based on score (0-100%)
+        'milestone_complete': 100,    # Completing a milestone
+        'word_learned': 10,           # When SRS status = 'learned'
+        'word_reviewed': 2,           # Each successful SRS review
+        'grammar_learned': 10,        # New grammar unit mastered
+        'daily_goal_bonus': 25,       # Bonus for meeting daily goal
+        'streak_bonus_per_day': 5,    # Multiplied by streak days
+    },
+    
+    # CEFR Multipliers - Higher levels = more XP reward
+    'cefr_multipliers': {
+        'A1': 1.0,
+        'A2': 1.25,
+        'B1': 1.5,
+        'B2': 2.0,
+        'C1': 2.5,
+        'C2': 3.0,
+    },
+    
+    # Inactivity Penalty (XP loss for consecutive days without activity)
+    # Day 1 = no penalty (grace period)
+    'inactivity_penalties': {
+        2: 5,   # Day 2 without activity: -5 XP
+        3: 10,  # Day 3: -10 XP
+        4: 15,  # Day 4: -15 XP
+        # Day 5+: max_daily_penalty
+    },
+    'max_daily_penalty': 20,  # Max XP lost per day after day 4
+    
+    # Streak Configuration
+    'streak': {
+        'min_activity_minutes': 5,  # Minimum minutes to count as "active day"
+    },
 }
 
 # Spaced Repetition (SM-2 Algorithm) Configuration

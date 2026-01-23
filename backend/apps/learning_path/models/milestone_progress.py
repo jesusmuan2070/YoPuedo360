@@ -5,6 +5,8 @@ from django.db import models
 from django.contrib.auth import get_user_model
 from django.utils import timezone
 
+from apps.users.services.xp_service import XPService
+
 User = get_user_model()
 
 
@@ -72,7 +74,7 @@ class UserMilestoneProgress(models.Model):
             self.save()
     
     def complete(self, score=100, time_spent=0):
-        """Mark milestone as completed"""
+        """Mark milestone as completed and award XP."""
         self.status = 'completed'
         self.completed_at = timezone.now()
         self.progress_percent = 100
@@ -81,9 +83,11 @@ class UserMilestoneProgress(models.Model):
         self.attempts += 1
         self.total_time_seconds += time_spent
         
-        # Award XP (from milestone)
-        if self.xp_earned == 0:  # First completion
-            self.xp_earned = self.milestone.xp_reward or 10
+        # Award XP via XPService (first completion only)
+        if self.xp_earned == 0:
+            cefr_level = getattr(self.milestone, 'cefr_level', 'A1') or 'A1'
+            result = XPService.award_milestone_complete_xp(self.user, cefr_level)
+            self.xp_earned = result.get('xp_awarded', 0)
         
         self.save()
     
@@ -193,10 +197,16 @@ class UserExerciseAttempt(models.Model):
     @classmethod
     def record(cls, user, exercise, user_answer, is_correct, started_at, 
                milestone_progress=None, hints_used=0):
-        """Helper to record an attempt"""
+        """Helper to record an attempt and award XP."""
         time_spent = int((timezone.now() - started_at).total_seconds())
         score = 100 if is_correct else 0
-        xp = exercise.xp_reward if is_correct else 0
+        
+        # Calculate XP via XPService
+        xp = 0
+        if is_correct:
+            cefr_level = getattr(exercise, 'cefr_level', 'A1') or 'A1'
+            result = XPService.award_exercise_xp(user, score=score, cefr_level=cefr_level)
+            xp = result.get('xp_awarded', 0)
         
         attempt = cls.objects.create(
             user=user,

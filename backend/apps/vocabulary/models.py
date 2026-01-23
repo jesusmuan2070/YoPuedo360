@@ -8,6 +8,8 @@ from django.contrib.auth import get_user_model
 from django.utils import timezone
 from datetime import timedelta
 
+from apps.users.services.xp_service import XPService
+
 User = get_user_model()
 
 
@@ -250,10 +252,12 @@ class UserVocabularyProgress(models.Model):
     
     def process_review(self, quality):
         """
-        Procesa el resultado de un repaso.
+        Procesa el resultado de un repaso y otorga XP.
         quality: 0-5 (0=fail, 3=hard, 4=good, 5=easy)
         Basado en algoritmo SM-2 de Anki.
         """
+        old_status = self.status
+        
         if quality < 3:
             # Respuesta incorrecta - reiniciar
             self.repetitions = 0
@@ -291,6 +295,16 @@ class UserVocabularyProgress(models.Model):
             self.status = 'new'
         
         self.save()
+        
+        # Award XP via XPService
+        cefr_level = getattr(self.vocabulary, 'level', 'A1') or 'A1'
+        
+        if quality >= 3:  # Correct review
+            XPService.award_word_reviewed_xp(self.user, cefr_level)
+        
+        # Bonus XP for reaching 'mastered' status
+        if self.status == 'mastered' and old_status != 'mastered':
+            XPService.award_word_learned_xp(self.user, cefr_level)
     
     @classmethod
     def get_words_for_review(cls, user, limit=20):
