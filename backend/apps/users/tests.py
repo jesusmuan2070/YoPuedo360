@@ -1,5 +1,6 @@
 import pytest
-from apps.users.models import User, LearningProfile
+from datetime import timedelta
+from apps.users.models import User, LearningProfile, DailyActivity
 from rest_framework.test import APIClient
 from rest_framework import status
 from django.urls import reverse
@@ -654,3 +655,417 @@ class TestUserDashboard:
         # With no activity, all should be 0
         assert data['today_xp'] == 0
         assert all(xp == 0 for xp in data['last_7_days_xp'])
+
+
+@pytest.mark.django_db
+class TestRecordSessionAPI:
+    """Tests for the RecordSessionView endpoint."""
+    
+    @pytest.fixture
+    def api_client(self):
+        return APIClient()
+    
+    @pytest.fixture
+    def user(self):
+        return User.objects.create_user(
+            username='session_user',
+            email='session@test.com',
+            password='testpass123'
+        )
+    
+    @pytest.fixture
+    def profile(self, user):
+        return LearningProfile.objects.create(
+            user=user,
+            daily_goal_minutes=15
+        )
+    
+    @pytest.fixture
+    def auth_client(self, api_client, user):
+        api_client.force_authenticate(user=user)
+        return api_client
+    
+    def test_record_session_requires_auth(self, api_client):
+        """Test that unauthenticated requests are rejected."""
+        url = '/api/v1/users/me/record-session/'
+        response = api_client.post(url, {'minutes': 5}, format='json')
+        assert response.status_code == status.HTTP_401_UNAUTHORIZED
+    
+    def test_record_session_basic(self, auth_client, user, profile):
+        """Test basic session recording."""
+        url = '/api/v1/users/me/record-session/'
+        
+        response = auth_client.post(url, {'minutes': 5}, format='json')
+        
+        assert response.status_code == status.HTTP_200_OK
+        data = response.json()
+        
+        assert data['minutes_studied'] == 5
+        assert data['daily_goal'] == 15
+        assert data['daily_goal_met'] is False
+        assert data['just_completed_goal'] is False
+        assert data['progress_percent'] == 33  # 5/15 = 33%
+    
+    def test_record_session_with_xp(self, auth_client, user, profile):
+        """Test session recording with XP tracking."""
+        url = '/api/v1/users/me/record-session/'
+        
+        response = auth_client.post(url, {
+            'minutes': 10,
+            'xp_earned': 50,
+            'activity_type': 'exercise'
+        }, format='json')
+        
+        assert response.status_code == status.HTTP_200_OK
+        data = response.json()
+        
+        # Check response has profile data
+        assert 'streak_days' in data
+        assert 'total_xp' in data
+        assert 'current_level' in data
+    
+    def test_record_session_accumulates(self, auth_client, user, profile):
+        """Test that multiple sessions accumulate."""
+        url = '/api/v1/users/me/record-session/'
+        
+        # First session
+        auth_client.post(url, {'minutes': 5}, format='json')
+        
+        # Second session
+        response = auth_client.post(url, {'minutes': 7}, format='json')
+        data = response.json()
+        
+        assert data['minutes_studied'] == 12
+        assert data['progress_percent'] == 80  # 12/15 = 80%
+    
+    def test_record_session_triggers_goal_completion(self, auth_client, user, profile):
+        """Test that reaching daily goal triggers celebration flag."""
+        url = '/api/v1/users/me/record-session/'
+        
+        # First session - not yet at goal
+        response1 = auth_client.post(url, {'minutes': 10}, format='json')
+        assert response1.json()['just_completed_goal'] is False
+        
+        # Second session - reaches goal
+        response2 = auth_client.post(url, {'minutes': 5}, format='json')
+        data = response2.json()
+        
+        assert data['daily_goal_met'] is True
+        assert data['just_completed_goal'] is True
+        assert data['bonus_xp_awarded'] > 0  # Should award bonus XP
+    
+    def test_record_session_goal_only_celebrated_once(self, auth_client, user, profile):
+        """Test that goal completion celebration only happens once per day."""
+        url = '/api/v1/users/me/record-session/'
+        
+        # First session reaches goal
+        auth_client.post(url, {'minutes': 15}, format='json')
+        
+        # Second session after goal met
+        response = auth_client.post(url, {'minutes': 5}, format='json')
+        data = response.json()
+        
+        assert data['daily_goal_met'] is True
+        assert data['just_completed_goal'] is False  # Not first time
+    
+    def test_record_session_validation_min_minutes(self, auth_client, user, profile):
+        """Test validation - minutes must be at least 1."""
+        url = '/api/v1/users/me/record-session/'
+        
+        response = auth_client.post(url, {'minutes': 0}, format='json')
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+    
+    def test_record_session_validation_max_minutes(self, auth_client, user, profile):
+        """Test validation - minutes max is 180."""
+        url = '/api/v1/users/me/record-session/'
+        
+        response = auth_client.post(url, {'minutes': 200}, format='json')
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+    
+    def test_record_session_missing_minutes(self, auth_client, user, profile):
+        """Test validation - minutes is required."""
+        url = '/api/v1/users/me/record-session/'
+        
+        response = auth_client.post(url, {}, format='json')
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+
+@pytest.mark.django_db
+class TestActivityHistoryAPI:
+    """Tests for the ActivityHistoryView endpoint."""
+    
+    @pytest.fixture
+    def api_client(self):
+        return APIClient()
+    
+    @pytest.fixture
+    def user(self):
+        return User.objects.create_user(
+            username='activity_user',
+            email='activity@test.com',
+            password='testpass123'
+        )
+    
+    @pytest.fixture
+    def profile(self, user):
+        return LearningProfile.objects.create(user=user)
+    
+    @pytest.fixture
+    def auth_client(self, api_client, user):
+        api_client.force_authenticate(user=user)
+        return api_client
+    
+    def test_activity_history_empty(self, auth_client, user, profile):
+        """Test activity history with no activities."""
+        url = '/api/v1/users/me/activity/'
+        response = auth_client.get(url)
+        
+        assert response.status_code == status.HTTP_200_OK
+        data = response.json()
+        
+        assert data['results'] == []
+        assert data['total_days'] == 30
+        assert data['days_active'] == 0
+        assert data['total_minutes'] == 0
+        assert data['total_xp'] == 0
+    
+    def test_activity_history_with_data(self, auth_client, user, profile):
+        """Test activity history with activities."""
+        from datetime import date
+        
+        # Create some activities
+        DailyActivity.objects.create(
+            user=user, date=date.today(),
+            minutes_studied=15, xp_earned=75, daily_goal_met=True
+        )
+        DailyActivity.objects.create(
+            user=user, date=date.today() - timedelta(days=1),
+            minutes_studied=20, xp_earned=100, daily_goal_met=True
+        )
+        
+        url = '/api/v1/users/me/activity/'
+        response = auth_client.get(url)
+        data = response.json()
+        
+        assert len(data['results']) == 2
+        assert data['days_active'] == 2
+        assert data['total_minutes'] == 35
+        assert data['total_xp'] == 175
+    
+    def test_activity_history_custom_days(self, auth_client, user, profile):
+        """Test custom days parameter."""
+        url = '/api/v1/users/me/activity/?days=7'
+        response = auth_client.get(url)
+        data = response.json()
+        
+        assert data['total_days'] == 7
+
+
+@pytest.mark.django_db
+class TestStreakDetailAPI:
+    """Tests for the StreakDetailView endpoint."""
+    
+    @pytest.fixture
+    def api_client(self):
+        return APIClient()
+    
+    @pytest.fixture
+    def user(self):
+        return User.objects.create_user(
+            username='streak_user',
+            email='streak@test.com',
+            password='testpass123'
+        )
+    
+    @pytest.fixture
+    def profile(self, user):
+        return LearningProfile.objects.create(
+            user=user,
+            streak_days=7,
+            longest_streak=15
+        )
+    
+    @pytest.fixture
+    def auth_client(self, api_client, user):
+        api_client.force_authenticate(user=user)
+        return api_client
+    
+    def test_streak_detail_basic(self, auth_client, user, profile):
+        """Test basic streak detail."""
+        url = '/api/v1/users/me/streaks/'
+        response = auth_client.get(url)
+        
+        assert response.status_code == status.HTTP_200_OK
+        data = response.json()
+        
+        assert data['current_streak'] == 7
+        assert data['longest_streak'] == 15
+        assert data['streak_start_date'] is not None
+        assert len(data['weekly_activity']) == 7
+        assert 'is_at_risk' in data
+    
+    def test_streak_at_risk_no_activity_today(self, auth_client, user, profile):
+        """Test streak at risk when no activity today."""
+        url = '/api/v1/users/me/streaks/'
+        response = auth_client.get(url)
+        data = response.json()
+        
+        # Streak > 0 but no activity today = at risk
+        assert data['is_at_risk'] is True
+    
+    def test_streak_safe_with_activity(self, auth_client, user, profile):
+        """Test streak not at risk when have activity."""
+        from datetime import date
+        
+        # Add today's activity
+        DailyActivity.objects.create(
+            user=user, date=date.today(),
+            minutes_studied=10
+        )
+        
+        url = '/api/v1/users/me/streaks/'
+        response = auth_client.get(url)
+        data = response.json()
+        
+        assert data['is_at_risk'] is False
+
+
+@pytest.mark.django_db
+class TestXPHistoryAPI:
+    """Tests for the XPHistoryView endpoint."""
+    
+    @pytest.fixture
+    def api_client(self):
+        return APIClient()
+    
+    @pytest.fixture
+    def user(self):
+        return User.objects.create_user(
+            username='xp_user',
+            email='xp@test.com',
+            password='testpass123'
+        )
+    
+    @pytest.fixture
+    def profile(self, user):
+        return LearningProfile.objects.create(
+            user=user,
+            total_xp=2500,
+            current_level=3
+        )
+    
+    @pytest.fixture
+    def auth_client(self, api_client, user):
+        api_client.force_authenticate(user=user)
+        return api_client
+    
+    def test_xp_history_basic(self, auth_client, user, profile):
+        """Test basic XP history."""
+        url = '/api/v1/users/me/xp-history/'
+        response = auth_client.get(url)
+        
+        assert response.status_code == status.HTTP_200_OK
+        data = response.json()
+        
+        assert data['current_level'] == 3
+        assert data['total_xp'] == 2500
+        assert data['xp_to_next_level'] == 500  # Level 3 needs 3000, has 2500
+        assert data['level_progress_percent'] == 50  # 500/1000 = 50%
+        assert len(data['daily_xp']) == 7  # Default 7 days
+    
+    def test_xp_history_custom_days(self, auth_client, user, profile):
+        """Test custom days parameter."""
+        url = '/api/v1/users/me/xp-history/?days=14'
+        response = auth_client.get(url)
+        data = response.json()
+        
+        assert len(data['daily_xp']) == 14
+
+
+@pytest.mark.django_db
+class TestUserSettingsAPI:
+    """Tests for the UserSettingsView endpoint."""
+    
+    @pytest.fixture
+    def api_client(self):
+        return APIClient()
+    
+    @pytest.fixture
+    def user(self):
+        return User.objects.create_user(
+            username='settings_user',
+            email='settings@test.com',
+            password='testpass123'
+        )
+    
+    @pytest.fixture
+    def profile(self, user):
+        return LearningProfile.objects.create(
+            user=user,
+            daily_goal_minutes=15,
+            learning_goal='general'
+        )
+    
+    @pytest.fixture
+    def auth_client(self, api_client, user):
+        api_client.force_authenticate(user=user)
+        return api_client
+    
+    def test_get_settings(self, auth_client, user, profile):
+        """Test getting user settings."""
+        url = '/api/v1/users/me/settings/'
+        response = auth_client.get(url)
+        
+        assert response.status_code == status.HTTP_200_OK
+        data = response.json()
+        
+        assert data['daily_goal_minutes'] == 15
+        assert data['learning_goal'] == 'general'
+        assert 'preferred_ai_provider' in data
+        assert 'notifications_enabled' in data
+    
+    def test_update_settings(self, auth_client, user, profile):
+        """Test updating user settings."""
+        url = '/api/v1/users/me/settings/'
+        
+        response = auth_client.patch(url, {
+            'daily_goal_minutes': 30,
+            'learning_goal': 'work'
+        }, format='json')
+        
+        assert response.status_code == status.HTTP_200_OK
+        data = response.json()
+        
+        assert 'daily_goal_minutes' in data['updated_fields']
+        assert 'learning_goal' in data['updated_fields']
+        
+        # Verify in DB
+        profile.refresh_from_db()
+        assert profile.daily_goal_minutes == 30
+        assert profile.learning_goal == 'work'
+    
+    def test_settings_validation_daily_goal_min(self, auth_client, user, profile):
+        """Test daily goal minimum validation."""
+        url = '/api/v1/users/me/settings/'
+        
+        response = auth_client.patch(url, {
+            'daily_goal_minutes': 1  # Below minimum
+        }, format='json')
+        
+        assert response.status_code == status.HTTP_200_OK
+        
+        profile.refresh_from_db()
+        assert profile.daily_goal_minutes == 5  # Clamped to minimum
+    
+    def test_settings_validation_daily_goal_max(self, auth_client, user, profile):
+        """Test daily goal maximum validation."""
+        url = '/api/v1/users/me/settings/'
+        
+        response = auth_client.patch(url, {
+            'daily_goal_minutes': 200  # Above maximum
+        }, format='json')
+        
+        assert response.status_code == status.HTTP_200_OK
+        
+        profile.refresh_from_db()
+        assert profile.daily_goal_minutes == 120  # Clamped to maximum

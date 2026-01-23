@@ -45,3 +45,17 @@ class UserSerializer(serializers.ModelSerializer):
             profile.save()
             
         return instance
+
+
+class RecordSessionSerializer(serializers.Serializer):
+    """
+    Serializer for recording study sessions.
+    Used by RecordSessionView to validate incoming data.
+    """
+    minutes = serializers.IntegerField(min_value=1, max_value=180)
+    xp_earned = serializers.IntegerField(min_value=0, default=0, required=False)
+    activity_type = serializers.ChoiceField(
+        choices=['exercise', 'lesson', 'vocabulary', 'grammar', 'conversation'],
+        required=False,
+        default='lesson'
+    )
