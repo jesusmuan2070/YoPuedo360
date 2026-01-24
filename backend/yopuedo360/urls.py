@@ -9,13 +9,20 @@ from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
 )
+from apps.users.serializers import CustomTokenObtainPairSerializer
+
+
+# Custom login view that accepts email OR username
+class CustomTokenObtainPairView(TokenObtainPairView):
+    serializer_class = CustomTokenObtainPairSerializer
+
 
 urlpatterns = [
     # Admin
     path('admin/', admin.site.urls),
     
-    # JWT Authentication
-    path('api/v1/auth/login/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    # JWT Authentication (supports email or username)
+    path('api/v1/auth/login/', CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/v1/auth/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     
     # Onboarding API (includes registration)

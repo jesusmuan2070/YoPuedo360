@@ -155,7 +155,7 @@ class LearningOrchestrator:
             milestone: Milestone context
             user: User (for target_language)
         """
-        # 1. Buscar en DB
+        # Primero intentamos obtener el existente
         realization = IntentRealization.objects.filter(
             intent=intent,
             milestone=milestone
@@ -164,20 +164,28 @@ class LearningOrchestrator:
         if realization:
             return realization
         
-        # 2. Generar con AI
+        # No existe → Generar con AI
         print(f"🤖 Generating intent realization: {intent.name} in {milestone.name}")
-        
         examples = self._generate_intent_examples_ai(intent, milestone, user)
         
-        # 3. Guardar (caché)
-        realization = IntentRealization.objects.create(
+        # Usar get_or_create para evitar race condition
+        # Si otra petición creó el registro mientras generábamos con AI,
+        # simplemente obtenemos ese registro en lugar de fallar
+        realization, created = IntentRealization.objects.get_or_create(
             intent=intent,
             milestone=milestone,
-            example_chunks=examples['chunks'],
-            difficulty=examples.get('difficulty', 2),
-            estimated_time=examples.get('time', 10),
-            priority=self._calculate_priority(intent, milestone)
+            defaults={
+                'example_chunks': examples['chunks'],
+                'difficulty': examples.get('difficulty', 2),
+                'estimated_time': examples.get('time', 10),
+                'priority': self._calculate_priority(intent, milestone)
+            }
         )
+        
+        # Si ya existía (otra petición lo creó), podemos actualizar con nuestros datos
+        # (opcional, por ahora usamos lo que ya existe)
+        if not created:
+            print(f"ℹ️ Intent realization already existed (created by parallel request)")
         
         return realization
     

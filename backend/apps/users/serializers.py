@@ -1,4 +1,6 @@
 from rest_framework import serializers
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from django.db.models import Q
 from .models import User, LearningProfile
 
 class LearningProfileSerializer(serializers.ModelSerializer):
@@ -59,3 +61,21 @@ class RecordSessionSerializer(serializers.Serializer):
         required=False,
         default='lesson'
     )
+
+
+class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
+    """
+    Custom JWT serializer that allows login with email OR username.
+    Maps email to username before delegating to parent.
+    """
+
+    def validate(self, attrs):
+        identifier = attrs.get("username")
+
+        # If identifier looks like an email, try to map it to username
+        if identifier and "@" in identifier:
+            user = User.objects.filter(email__iexact=identifier).first()
+            if user:
+                attrs["username"] = user.username
+
+        return super().validate(attrs)

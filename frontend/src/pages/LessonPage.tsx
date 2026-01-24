@@ -4,9 +4,9 @@
  * Uses Tailwind CSS
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { orchestratorAPI } from '../services/api';
+import { orchestratorAPI, usersAPI } from '../services/api';
 
 function LessonPage() {
     const { milestoneId } = useParams();
@@ -16,6 +16,7 @@ function LessonPage() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [currentPhraseIndex, setCurrentPhraseIndex] = useState(0);
+    const startTime = useRef<number>(Date.now()); // Track lesson start time
 
     useEffect(() => {
         loadContent();
@@ -49,12 +50,41 @@ function LessonPage() {
 
     const handleComplete = async () => {
         try {
+            // Calculate time spent on lesson (in minutes)
+            const timeSpentMs = Date.now() - startTime.current;
+            const minutesStudied = Math.max(1, Math.round(timeSpentMs / 60000)); // At least 1 minute
+            const xpEarned = 25; // Base XP per intent completion
+
+            // 1. Complete the intent in the orchestrator
             if (content.current_intent.id) {
                 await orchestratorAPI.completeIntent(content.current_intent.id, {
                     milestone_id: milestoneId,
                     score: 100
                 });
             }
+
+            // 2. Record the study session (updates XP, streak, daily activity)
+            try {
+                // Debug: Check if token exists
+                const token = localStorage.getItem('access_token');
+                console.log('🔐 Token exists:', !!token, token ? `(${token.substring(0, 20)}...)` : '');
+
+                const sessionResult = await usersAPI.recordSession({
+                    minutes: minutesStudied,
+                    xp_earned: xpEarned,
+                    activity_type: 'lesson'
+                });
+                console.log('📊 Session recorded:', sessionResult.data);
+
+                // Show celebration if daily goal was just completed
+                if (sessionResult.data.just_completed_goal) {
+                    console.log('🎉 Daily goal completed! Bonus XP:', sessionResult.data.bonus_xp_awarded);
+                }
+            } catch (sessionError) {
+                console.error('Failed to record session:', sessionError);
+                // Don't block navigation on session recording failure
+            }
+
             navigate(-1); // Go back to scenario page
         } catch (err) {
             console.error('Error completing intent:', err);
