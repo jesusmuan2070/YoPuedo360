@@ -56,8 +56,11 @@ class DailyActivityService:
         Returns:
             Dict with activity status and celebration flag
         """
+        from apps.users.services.streak_service import StreakService
+        
         activity = cls.get_or_create_today(user)
         goal = cls.get_daily_goal(user)
+        min_streak_minutes = StreakService.get_min_activity_minutes()  # 5 min
         
         # Track previous state
         old_minutes = activity.minutes_studied
@@ -79,6 +82,41 @@ class DailyActivityService:
             result = XPService.award_daily_goal_bonus(user)
             bonus_xp = result.get('xp_awarded', 0)
         
+        # ========================================
+        # STREAK UPDATE (real-time, when crossing 5 min threshold)
+        # ========================================
+        just_started_streak = False
+        streak_bonus_xp = 0
+        profile = getattr(user, 'learning_profile', None)
+        
+        if profile:
+            crossed_streak_threshold = (
+                old_minutes < min_streak_minutes and 
+                activity.minutes_studied >= min_streak_minutes
+            )
+            
+            if crossed_streak_threshold:
+                # User just crossed 5 min for the first time today
+                if StreakService.was_active_yesterday(user):
+                    # Continue streak
+                    profile.streak_days += 1
+                else:
+                    # Start new streak
+                    profile.streak_days = 1
+                
+                # Update longest streak if new record
+                if profile.streak_days > profile.longest_streak:
+                    profile.longest_streak = profile.streak_days
+                
+                profile.save(update_fields=['streak_days', 'longest_streak'])
+                just_started_streak = True
+                
+                # Award streak bonus XP
+                streak_result = XPService.award_streak_bonus(user, profile.streak_days)
+                streak_bonus_xp = streak_result.get('xp_awarded', 0)
+                
+                print(f"🔥 Streak updated! New streak: {profile.streak_days} days (+{streak_bonus_xp} XP)")
+        
         activity.save()
         
         return {
@@ -86,9 +124,14 @@ class DailyActivityService:
             'minutes_studied': activity.minutes_studied,
             'daily_goal': goal,
             'daily_goal_met': activity.daily_goal_met,
-            'just_completed_goal': just_completed_goal,  # 🎉 For celebration UI
+            'just_completed_goal': just_completed_goal,
             'bonus_xp_awarded': bonus_xp,
+            'streak_bonus_xp': streak_bonus_xp,
             'progress_percent': min(100, int((activity.minutes_studied / goal) * 100)),
+            'streak_days': profile.streak_days if profile else 0,
+            'total_xp': profile.total_xp if profile else 0,
+            'current_level': profile.current_level if profile else 1,
+            'just_started_streak': just_started_streak,
         }
     
     @classmethod

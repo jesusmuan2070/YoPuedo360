@@ -65,12 +65,27 @@ class StreakService:
     @classmethod
     def update_streak(cls, user) -> Dict:
         """
+        DEPRECATED: This method was designed for a daily cron job.
+        
+        Streak is now updated in real-time by DailyActivityService.record_activity()
+        when the user crosses the 5-minute threshold.
+        
+        Keeping this method for reference/rollback but it should NOT be called.
+        
+        ---
+        Original docstring:
         Update user's streak based on yesterday's activity.
         Called by daily cron job.
         
         Returns:
             Dict with streak update details
         """
+        import warnings
+        warnings.warn(
+            "update_streak() is deprecated. Streak is now updated real-time in DailyActivityService.",
+            DeprecationWarning
+        )
+        
         profile = getattr(user, 'learning_profile', None)
         if not profile:
             return {'error': 'No learning profile', 'updated': False}
@@ -157,11 +172,26 @@ class StreakService:
     @classmethod
     def process_daily_streaks(cls) -> Dict:
         """
+        DEPRECATED: This cron job is no longer needed.
+        
+        Streak is now updated in real-time by DailyActivityService.record_activity()
+        when each user crosses the 5-minute threshold.
+        
+        Keeping this method for reference/rollback but it should NOT be scheduled.
+        
+        ---
+        Original docstring:
         Process streaks for all users. Run daily via cron.
         
         Returns:
             Summary of processed users
         """
+        import warnings
+        warnings.warn(
+            "process_daily_streaks() is deprecated. Streaks are now updated real-time.",
+            DeprecationWarning
+        )
+        
         from apps.users.models import User
         
         users = User.objects.all()
