@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, MoreVertical, Copy, Check, MessageSquare, Volume2, Languages, Plus, Search } from 'lucide-react';
+import { Send, MoreVertical, Copy, Check, MessageSquare, Volume2, Languages, Plus, Search, Trash2 } from 'lucide-react';
+import Header from '../components/layout/Header';
 
 // ============= INTERFACES - Lo que tu backend debe retornar =============
 interface Message {
@@ -240,6 +241,7 @@ const LanguageChatApp: React.FC<LanguageChatAppProps> = ({
     const [inputText, setInputText] = useState('');
     const [isTyping, setIsTyping] = useState(false);
     const [activeMenu, setActiveMenu] = useState<string | null>(null);
+    const [activeSidebarMenu, setActiveSidebarMenu] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -303,11 +305,19 @@ const LanguageChatApp: React.FC<LanguageChatAppProps> = ({
     // Cerrar menú al hacer clic fuera
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
+            const target = event.target as HTMLElement;
+
+            // Cerrar menú de mensajes
             if (activeMenu) {
-                const target = event.target as HTMLElement;
-                // Verificar si el clic fue fuera del menú
                 if (!target.closest('.message-menu') && !target.closest('.menu-button')) {
                     setActiveMenu(null);
+                }
+            }
+
+            // Cerrar menú del sidebar
+            if (activeSidebarMenu) {
+                if (!target.closest('.sidebar-menu') && !target.closest('.more-button')) {
+                    setActiveSidebarMenu(null);
                 }
             }
         };
@@ -316,7 +326,7 @@ const LanguageChatApp: React.FC<LanguageChatAppProps> = ({
         return () => {
             document.removeEventListener('mousedown', handleClickOutside);
         };
-    }, [activeMenu]);
+    }, [activeMenu, activeSidebarMenu]);
 
     const handleSendMessage = async () => {
         if (!inputText.trim() || !selectedFriend || !userId) return;
@@ -397,6 +407,17 @@ const LanguageChatApp: React.FC<LanguageChatAppProps> = ({
         setActiveMenu(null);
     };
 
+    const handleDeleteChat = async (e: React.MouseEvent, friendId: string) => {
+        e.stopPropagation(); // Evitar seleccionar el chat al borrar
+        if (window.confirm('¿Estás seguro de que quieres eliminar esta conversación?')) {
+            // TODO: Implementar llamada al backend
+            setAIFriends(prev => prev.filter(f => f.id !== friendId));
+            if (selectedFriend?.id === friendId) {
+                setSelectedFriend(null);
+            }
+        }
+    };
+
     // Estado de error o sin autenticación
     if (error && !userId) {
         return (
@@ -423,198 +444,229 @@ const LanguageChatApp: React.FC<LanguageChatAppProps> = ({
     }
 
     return (
-        <div className="flex h-screen bg-gray-50">
-            {/* Sidebar - Lista de Chats */}
-            <div className="w-80 bg-white border-r border-gray-200 flex flex-col">
-                <div className="p-4 border-b border-gray-200">
-                    <div className="flex items-center justify-between mb-4">
-                        <h1 className="text-2xl font-bold text-gray-800">Chats</h1>
-                        <button className="p-2 hover:bg-gray-100 rounded-full transition">
-                            <Plus className="w-5 h-5 text-gray-600" />
-                        </button>
-                    </div>
-                    <div className="relative">
-                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-                        <input
-                            type="text"
-                            placeholder="Buscar conversaciones..."
-                            className="w-full pl-10 pr-4 py-2 bg-gray-100 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        />
-                    </div>
-                    {/* Mostrar nivel del usuario */}
-                    <div className="mt-2 text-xs text-gray-500">
-                        Practicando {targetLanguage.toUpperCase()} • Nivel {userLevel}
-                    </div>
-                </div>
+        <div className="flex flex-col h-screen bg-gray-50">
+            {/* Header Global */}
+            <Header showStats={true} />
 
-                <div className="flex-1 overflow-y-auto">
-                    {aiFriends.map(friend => (
-                        <div
-                            key={friend.id}
-                            onClick={() => setSelectedFriend(friend)}
-                            className={`p-4 border-b border-gray-100 cursor-pointer transition ${selectedFriend?.id === friend.id
-                                ? 'bg-blue-50 border-l-4 border-l-blue-500'
-                                : 'hover:bg-gray-50'
-                                }`}
-                        >
-                            <div className="flex items-start gap-3">
-                                <div className="text-3xl">{friend.avatar}</div>
-                                <div className="flex-1 min-w-0">
-                                    <div className="flex items-center justify-between">
-                                        <h3 className="font-semibold text-gray-800 truncate">
-                                            {friend.name}
-                                        </h3>
-                                        <span className="text-xs text-gray-500">{friend.timestamp}</span>
+            {/* Contenido Principal (Chat) - Restamos la altura del header (64px) */}
+            <div className="flex flex-1 overflow-hidden h-[calc(100vh-64px)]">
+                {/* Sidebar - Lista de Chats */}
+                <div className="w-80 bg-white border-r border-gray-200 flex flex-col">
+                    <div className="p-4 border-b border-gray-200">
+                        <div className="flex items-center justify-between mb-4">
+                            <h1 className="text-2xl font-bold text-gray-800">Chats</h1>
+                            <button className="p-2 hover:bg-gray-100 rounded-full transition">
+                                <Plus className="w-5 h-5 text-gray-600" />
+                            </button>
+                        </div>
+                        <div className="relative">
+                            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                            <input
+                                type="text"
+                                placeholder="Buscar conversaciones..."
+                                className="w-full pl-10 pr-4 py-2 bg-gray-100 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            />
+                        </div>
+                        {/* Mostrar nivel del usuario */}
+                        <div className="mt-2 text-xs text-gray-500">
+                            Practicando {targetLanguage.toUpperCase()} • Nivel {userLevel}
+                        </div>
+                    </div>
+
+                    <div className="flex-1 overflow-y-auto">
+                        {aiFriends.map(friend => (
+                            <div
+                                key={friend.id}
+                                onClick={() => setSelectedFriend(friend)}
+                                className={`p-4 border-b border-gray-100 cursor-pointer transition group ${selectedFriend?.id === friend.id
+                                    ? 'bg-blue-50 border-l-4 border-l-blue-500'
+                                    : 'hover:bg-gray-50'
+                                    }`}
+                            >
+                                <div className="flex items-start gap-3">
+                                    <div className="text-3xl">{friend.avatar}</div>
+                                    <div className="flex-1 min-w-0">
+                                        <div className="flex items-center justify-between">
+                                            <h3 className="font-semibold text-gray-800 truncate">
+                                                {friend.name}
+                                            </h3>
+                                            <span className="text-xs text-gray-500">{friend.timestamp}</span>
+                                        </div>
+                                        <p className="text-xs text-blue-600 font-medium mb-1">
+                                            {friend.role} • Nivel {friend.level}
+                                        </p>
+                                        <p className="text-sm text-gray-600 truncate">
+                                            {friend.lastMessage}
+                                        </p>
                                     </div>
-                                    <p className="text-xs text-blue-600 font-medium mb-1">
-                                        {friend.role} • Nivel {friend.level}
-                                    </p>
-                                    <p className="text-sm text-gray-600 truncate">
-                                        {friend.lastMessage}
-                                    </p>
-                                </div>
-                                {friend.unread && (
-                                    <div className="w-2 h-2 bg-blue-500 rounded-full mt-2"></div>
-                                )}
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            </div>
+                                    <div className="flex flex-col items-end gap-2 relative">
+                                        {friend.unread && (
+                                            <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                                        )}
+                                        <div className="relative">
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setActiveSidebarMenu(activeSidebarMenu === friend.id ? null : friend.id);
+                                                }}
+                                                className={`p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition ${activeSidebarMenu === friend.id ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}
+                                            >
+                                                <MoreVertical className="w-4 h-4" />
+                                            </button>
 
-            {/* Área de Chat Principal */}
-            <div className="flex-1 flex flex-col">
-                {selectedFriend ? (
-                    <>
-                        {/* Header del Chat */}
-                        <div className="bg-white border-b border-gray-200 p-4">
-                            <div className="flex items-center gap-3">
-                                <div className="text-4xl">{selectedFriend.avatar}</div>
-                                <div>
-                                    <h2 className="font-bold text-gray-800">{selectedFriend.name}</h2>
-                                    <p className="text-sm text-gray-600">
-                                        {selectedFriend.role} • Practicando nivel {selectedFriend.level}
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Mensajes */}
-                        <div className="flex-1 overflow-y-auto p-4 space-y-4">
-                            {messages.map(message => (
-                                <div
-                                    key={message.id}
-                                    className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}
-                                >
-                                    {/* La burbuja del mensaje */}
-                                    <div className={`relative group max-w-md`}>
-                                        <div
-                                            className={`rounded-2xl px-4 py-3 ${message.sender === 'user'
-                                                ? 'bg-blue-500 text-white'
-                                                : 'bg-gray-200 text-gray-800'
-                                                }`}
-                                        >
-                                            <p className="text-sm mb-1">{message.text}</p>
-                                            {message.showTranslation && (
-                                                <p className={`text-xs mt-2 pt-2 border-t ${message.sender === 'user'
-                                                    ? 'border-blue-400 text-blue-100'
-                                                    : 'border-gray-300 text-gray-600'
-                                                    }`}>
-                                                    {message.translation}
-                                                </p>
+                                            {activeSidebarMenu === friend.id && (
+                                                <div className="absolute right-0 top-6 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-20 w-32 sidebar-menu">
+                                                    <button
+                                                        onClick={(e) => handleDeleteChat(e, friend.id)}
+                                                        className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
+                                                    >
+                                                        <Trash2 className="w-4 h-4" />
+                                                        Eliminar
+                                                    </button>
+                                                </div>
                                             )}
                                         </div>
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
 
-                                        {/* Menú contextual */}
-                                        <button
-                                            onClick={() => setActiveMenu(activeMenu === message.id ? null : message.id)}
-                                            className={`menu-button absolute ${message.sender === 'user' ? '-left-10' : '-right-10'} top-2 opacity-0 group-hover:opacity-100 p-1 hover:bg-gray-100 rounded transition`}
-                                        >
-                                            <MoreVertical className="w-4 h-4 text-gray-600" />
-                                        </button>
+                {/* Área de Chat Principal */}
+                <div className="flex-1 flex flex-col">
+                    {selectedFriend ? (
+                        <>
+                            {/* Header del Chat */}
+                            <div className="bg-white border-b border-gray-200 p-4">
+                                <div className="flex items-center gap-3">
+                                    <div className="text-4xl">{selectedFriend.avatar}</div>
+                                    <div>
+                                        <h2 className="font-bold text-gray-800">{selectedFriend.name}</h2>
+                                        <p className="text-sm text-gray-600">
+                                            {selectedFriend.role} • Practicando nivel {selectedFriend.level}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
 
-                                        {activeMenu === message.id && (
-                                            <div className={`message-menu absolute ${message.sender === 'user' ? '-left-52' : '-right-52'} top-0 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-10 w-48`}>
-                                                <button
-                                                    onClick={() => copyMessage(message.text)}
-                                                    className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 flex items-center gap-2"
-                                                >
-                                                    <Copy className="w-4 h-4" /> Copiar
-                                                </button>
-                                                {message.sender === 'user' && (
+                            {/* Mensajes */}
+                            <div className="flex-1 overflow-y-auto p-4 space-y-4">
+                                {messages.map(message => (
+                                    <div
+                                        key={message.id}
+                                        className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}
+                                    >
+                                        {/* La burbuja del mensaje */}
+                                        <div className={`relative group max-w-md`}>
+                                            <div
+                                                className={`rounded-2xl px-4 py-3 ${message.sender === 'user'
+                                                    ? 'bg-blue-500 text-white'
+                                                    : 'bg-gray-200 text-gray-800'
+                                                    }`}
+                                            >
+                                                <p className="text-sm mb-1">{message.text}</p>
+                                                {message.showTranslation && (
+                                                    <p className={`text-xs mt-2 pt-2 border-t ${message.sender === 'user'
+                                                        ? 'border-blue-400 text-blue-100'
+                                                        : 'border-gray-300 text-gray-600'
+                                                        }`}>
+                                                        {message.translation}
+                                                    </p>
+                                                )}
+                                            </div>
+
+                                            {/* Menú contextual */}
+                                            <button
+                                                onClick={() => setActiveMenu(activeMenu === message.id ? null : message.id)}
+                                                className={`menu-button absolute ${message.sender === 'user' ? '-left-10' : '-right-10'} top-2 opacity-0 group-hover:opacity-100 p-1 hover:bg-gray-100 rounded transition`}
+                                            >
+                                                <MoreVertical className="w-4 h-4 text-gray-600" />
+                                            </button>
+
+                                            {activeMenu === message.id && (
+                                                <div className={`message-menu absolute ${message.sender === 'user' ? '-left-52' : '-right-52'} top-0 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-10 w-48`}>
                                                     <button
-                                                        onClick={() => handleCorrectMessage(message)}
+                                                        onClick={() => copyMessage(message.text)}
                                                         className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 flex items-center gap-2"
                                                     >
-                                                        <Check className="w-4 h-4" /> Corregir
+                                                        <Copy className="w-4 h-4" /> Copiar
                                                     </button>
-                                                )}
-                                                <button
-                                                    onClick={() => handleGetFeedback(message)}
-                                                    className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 flex items-center gap-2"
-                                                >
-                                                    <MessageSquare className="w-4 h-4" /> Comentario
-                                                </button>
-                                                <button
-                                                    onClick={() => handleSpeak(message.text)}
-                                                    className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 flex items-center gap-2"
-                                                >
-                                                    <Volume2 className="w-4 h-4" /> Hablar
-                                                </button>
-                                                <button
-                                                    onClick={() => toggleTranslation(message.id)}
-                                                    className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 flex items-center gap-2"
-                                                >
-                                                    <Languages className="w-4 h-4" />
-                                                    {message.showTranslation ? 'Ocultar' : 'Mostrar'} traducción
-                                                </button>
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-                            ))}
-
-                            {isTyping && (
-                                <div className="flex justify-start">
-                                    <div className="bg-gray-200 rounded-2xl px-4 py-3">
-                                        <div className="flex gap-1">
-                                            <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce"></div>
-                                            <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
-                                            <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '0.4s' }}></div>
+                                                    {message.sender === 'user' && (
+                                                        <button
+                                                            onClick={() => handleCorrectMessage(message)}
+                                                            className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 flex items-center gap-2"
+                                                        >
+                                                            <Check className="w-4 h-4" /> Corregir
+                                                        </button>
+                                                    )}
+                                                    <button
+                                                        onClick={() => handleGetFeedback(message)}
+                                                        className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 flex items-center gap-2"
+                                                    >
+                                                        <MessageSquare className="w-4 h-4" /> Comentario
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleSpeak(message.text)}
+                                                        className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 flex items-center gap-2"
+                                                    >
+                                                        <Volume2 className="w-4 h-4" /> Hablar
+                                                    </button>
+                                                    <button
+                                                        onClick={() => toggleTranslation(message.id)}
+                                                        className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 flex items-center gap-2"
+                                                    >
+                                                        <Languages className="w-4 h-4" />
+                                                        {message.showTranslation ? 'Ocultar' : 'Mostrar'} traducción
+                                                    </button>
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
-                                </div>
-                            )}
+                                ))}
 
-                            <div ref={messagesEndRef} />
-                        </div>
+                                {isTyping && (
+                                    <div className="flex justify-start">
+                                        <div className="bg-gray-200 rounded-2xl px-4 py-3">
+                                            <div className="flex gap-1">
+                                                <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce"></div>
+                                                <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                                                <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '0.4s' }}></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
 
-                        {/* Input de Mensaje */}
-                        <div className="bg-white border-t border-gray-200 p-4">
-                            <div className="flex gap-2">
-                                <input
-                                    type="text"
-                                    value={inputText}
-                                    onChange={e => setInputText(e.target.value)}
-                                    onKeyPress={e => e.key === 'Enter' && handleSendMessage()}
-                                    placeholder="Escribe tu mensaje..."
-                                    className="flex-1 px-4 py-3 bg-gray-100 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                />
-                                <button
-                                    onClick={handleSendMessage}
-                                    disabled={!inputText.trim()}
-                                    className="bg-blue-500 text-white p-3 rounded-full hover:bg-blue-600 transition disabled:opacity-50 disabled:cursor-not-allowed"
-                                >
-                                    <Send className="w-5 h-5" />
-                                </button>
+                                <div ref={messagesEndRef} />
                             </div>
+
+                            {/* Input de Mensaje */}
+                            <div className="bg-white border-t border-gray-200 p-4">
+                                <div className="flex gap-2">
+                                    <input
+                                        type="text"
+                                        value={inputText}
+                                        onChange={e => setInputText(e.target.value)}
+                                        onKeyPress={e => e.key === 'Enter' && handleSendMessage()}
+                                        placeholder="Escribe tu mensaje..."
+                                        className="flex-1 px-4 py-3 bg-gray-100 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    />
+                                    <button
+                                        onClick={handleSendMessage}
+                                        disabled={!inputText.trim()}
+                                        className="bg-blue-500 text-white p-3 rounded-full hover:bg-blue-600 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                                    >
+                                        <Send className="w-5 h-5" />
+                                    </button>
+                                </div>
+                            </div>
+                        </>
+                    ) : (
+                        <div className="flex-1 flex items-center justify-center text-gray-500">
+                            Selecciona una conversación para comenzar
                         </div>
-                    </>
-                ) : (
-                    <div className="flex-1 flex items-center justify-center text-gray-500">
-                        Selecciona una conversación para comenzar
-                    </div>
-                )}
+                    )}
+                </div>
             </div>
         </div>
     );

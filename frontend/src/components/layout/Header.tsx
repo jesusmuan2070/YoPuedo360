@@ -58,13 +58,13 @@ export default function Header({ showStats = true }: HeaderProps) {
                                 Learn
                             </Link>
                             <Link
-                                to="/chat"
-                                className={`font-medium transition-colors ${isActive('/chat')
+                                to="/chats"
+                                className={`font-medium transition-colors ${isActive('/chats')
                                     ? 'text-[#667eea]'
                                     : 'text-gray-600 hover:text-[#667eea]'
                                     }`}
                             >
-                                Chat
+                                Chats
                             </Link>
                         </nav>
                     </div>
