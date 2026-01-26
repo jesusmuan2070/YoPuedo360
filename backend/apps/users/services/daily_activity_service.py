@@ -6,6 +6,7 @@ from datetime import date
 from django.utils import timezone
 
 from apps.users.services.xp_service import XPService
+from apps.users.utils.timezone import get_user_today
 
 
 class DailyActivityService:
@@ -24,10 +25,11 @@ class DailyActivityService:
     
     @staticmethod
     def get_or_create_today(user) -> 'DailyActivity':
-        """Get or create DailyActivity record for today."""
+        """Get or create DailyActivity record for today (in user's timezone)."""
         from apps.users.models import DailyActivity
         
-        today = timezone.now().date()
+        # Use user's timezone, not UTC!
+        today = get_user_today(user)
         activity, created = DailyActivity.objects.get_or_create(
             user=user,
             date=today,
@@ -69,6 +71,11 @@ class DailyActivityService:
         # Update activity
         activity.minutes_studied += minutes
         activity.xp_earned += xp_earned
+        
+        # Award session XP to user's profile
+        session_xp_result = None
+        if xp_earned > 0:
+            session_xp_result = XPService.award_xp(user, xp_earned, 'Session completed')
         
         # Check if just completed daily goal
         just_completed_goal = False

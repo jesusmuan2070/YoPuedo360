@@ -7,10 +7,12 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { orchestratorAPI, usersAPI } from '../services/api';
+import { useStats } from '../context/StatsContext';
 
 function LessonPage() {
     const { milestoneId } = useParams();
     const navigate = useNavigate();
+    const { updateStats } = useStats();
 
     const [content, setContent] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -53,14 +55,17 @@ function LessonPage() {
             // Calculate time spent on lesson (in minutes)
             const timeSpentMs = Date.now() - startTime.current;
             const minutesStudied = Math.max(1, Math.round(timeSpentMs / 60000)); // At least 1 minute
-            const xpEarned = 25; // Base XP per intent completion
 
-            // 1. Complete the intent in the orchestrator
+            // 1. Complete the intent in the orchestrator (XP is calculated server-side)
+            let xpEarned = 0;
             if (content.current_intent.id) {
-                await orchestratorAPI.completeIntent(content.current_intent.id, {
+                const intentResult = await orchestratorAPI.completeIntent(content.current_intent.id, {
                     milestone_id: milestoneId,
                     score: 100
                 });
+                // Get XP from backend response (calculated with CEFR multipliers)
+                xpEarned = intentResult.data?.xp_awarded || 0;
+                console.log('✅ Intent completed, XP earned:', xpEarned);
             }
 
             // 2. Record the study session (updates XP, streak, daily activity)
@@ -71,10 +76,19 @@ function LessonPage() {
 
                 const sessionResult = await usersAPI.recordSession({
                     minutes: minutesStudied,
-                    xp_earned: xpEarned,
+                    xp_earned: xpEarned,  // Now comes from backend
                     activity_type: 'lesson'
                 });
                 console.log('📊 Session recorded:', sessionResult.data);
+
+                // Update global stats so Header shows new values immediately
+                updateStats({
+                    streak_days: sessionResult.data.streak_days,
+                    total_xp: sessionResult.data.total_xp,
+                    current_level: sessionResult.data.current_level,
+                    today_minutes: sessionResult.data.minutes_studied,
+                    daily_goal_met: sessionResult.data.daily_goal_met,
+                });
 
                 // Show celebration if daily goal was just completed
                 if (sessionResult.data.just_completed_goal) {

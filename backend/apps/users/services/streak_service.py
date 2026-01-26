@@ -7,6 +7,7 @@ from django.conf import settings
 from django.utils import timezone
 
 from apps.users.services.xp_service import XPService
+from apps.users.utils.timezone import get_user_today, get_user_yesterday
 
 
 class StreakService:
@@ -53,14 +54,13 @@ class StreakService:
     
     @classmethod
     def was_active_today(cls, user) -> bool:
-        """Check if user met minimum activity requirement today."""
-        return cls.was_active_on_date(user, timezone.now().date())
+        """Check if user met minimum activity requirement today (in user's timezone)."""
+        return cls.was_active_on_date(user, get_user_today(user))
     
     @classmethod
     def was_active_yesterday(cls, user) -> bool:
-        """Check if user met minimum activity requirement yesterday."""
-        yesterday = timezone.now().date() - timedelta(days=1)
-        return cls.was_active_on_date(user, yesterday)
+        """Check if user met minimum activity requirement yesterday (in user's timezone)."""
+        return cls.was_active_on_date(user, get_user_yesterday(user))
     
     @classmethod
     def update_streak(cls, user) -> Dict:

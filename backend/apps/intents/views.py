@@ -165,17 +165,37 @@ def get_milestone_content(request, milestone_id):
 def complete_intent(request, intent_id):
     """
     Mark an intent as practiced/completed
-    Updates UserIntentProgress
+    Updates UserIntentProgress and awards XP
     
     Body: {
         milestone_id: int,
         score: int (0-100)
     }
+    
+    Returns: {
+        success: bool,
+        status: str,
+        times_practiced: int,
+        last_score: int,
+        xp_awarded: int  # XP earned for this completion
+    }
     """
+    from apps.users.services.xp_service import XPService
+    
     user = request.user
     intent = get_object_or_404(CommunicativeIntent, id=intent_id)
     milestone_id = request.data.get('milestone_id')
     score = request.data.get('score', 0)
+    
+    # Get milestone for CEFR level
+    milestone = None
+    cefr_level = 'A1'  # Default
+    if milestone_id:
+        try:
+            milestone = Milestone.objects.get(id=milestone_id)
+            cefr_level = milestone.level
+        except Milestone.DoesNotExist:
+            pass
     
     # Update or create progress
     progress, created = UserIntentProgress.objects.get_or_create(
@@ -198,11 +218,17 @@ def complete_intent(request, intent_id):
     
     progress.save()
     
+    # Award XP for intent completion (uses config: xp_base.exercise_complete)
+    # Score affects XP: 10 base + up to 40 bonus based on score
+    xp_result = XPService.award_exercise_xp(user, score=score, cefr_level=cefr_level)
+    xp_awarded = xp_result.get('xp_awarded', 0)
+    
     return Response({
         'success': True,
         'status': progress.status,
         'times_practiced': progress.times_practiced,
         'last_score': progress.last_score,
+        'xp_awarded': xp_awarded,  # Frontend can use this
     })
 
 

@@ -6,7 +6,8 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { usersAPI } from '../../services/api';
-import type { DashboardData, User } from '../../types';
+import { useStats } from '../../context/StatsContext';
+import type { User } from '../../types';
 import LanguageDropdown from './LanguageDropdown';
 
 interface HeaderProps {
@@ -16,7 +17,7 @@ interface HeaderProps {
 
 export default function Header({ showStats = true }: HeaderProps) {
     const location = useLocation();
-    const [dashboard, setDashboard] = useState<DashboardData | null>(null);
+    const { stats, loading: statsLoading } = useStats();
     const [user, setUser] = useState<User | null>(null);
     const [loading, setLoading] = useState(true);
     const [activeCourses, setActiveCourses] = useState<string[]>([]);
@@ -29,11 +30,7 @@ export default function Header({ showStats = true }: HeaderProps) {
 
     const loadUserData = async () => {
         try {
-            const [dashboardRes, userRes] = await Promise.all([
-                usersAPI.getDashboard(),
-                usersAPI.getMe(),
-            ]);
-            setDashboard(dashboardRes.data);
+            const userRes = await usersAPI.getMe();
             setUser(userRes.data);
         } catch (error) {
             console.error('Failed to load user data:', error);
@@ -44,9 +41,9 @@ export default function Header({ showStats = true }: HeaderProps) {
 
     const isActive = (path: string) => location.pathname === path;
 
-    // Calculate daily progress percentage
-    const dailyProgress = dashboard
-        ? Math.min(100, Math.round((dashboard.today_minutes / dashboard.daily_goal_minutes) * 100))
+    // Calculate daily progress percentage from context stats
+    const dailyProgress = stats
+        ? Math.min(100, Math.round((stats.today_minutes / stats.daily_goal_minutes) * 100))
         : 0;
 
 
@@ -89,7 +86,7 @@ export default function Header({ showStats = true }: HeaderProps) {
                     </div>
 
                     {/* Right side: Stats */}
-                    {showStats && !loading && dashboard && (
+                    {showStats && !loading && stats && (
                         <div className="flex items-center gap-4 md:gap-6">
                             {/* Language Dropdown */}
                             <LanguageDropdown
@@ -113,11 +110,11 @@ export default function Header({ showStats = true }: HeaderProps) {
                                 title="Daily streak"
                             >
                                 <span className="text-xl" style={{
-                                    filter: dashboard.streak > 0 ? 'drop-shadow(0 0 4px #ff9500)' : 'none'
+                                    filter: stats.streak_days > 0 ? 'drop-shadow(0 0 4px #ff9500)' : 'none'
                                 }}>
                                     🔥
                                 </span>
-                                <span className="font-semibold text-gray-700">{dashboard.streak}</span>
+                                <span className="font-semibold text-gray-700">{stats.streak_days}</span>
                             </div>
 
                             {/* XP */}
@@ -131,7 +128,7 @@ export default function Header({ showStats = true }: HeaderProps) {
                                     ⚡
                                 </span>
                                 <span className="font-semibold text-gray-700">
-                                    {dashboard.total_xp.toLocaleString()} XP
+                                    {stats.total_xp.toLocaleString()} XP
                                 </span>
                             </div>
 
@@ -146,14 +143,14 @@ export default function Header({ showStats = true }: HeaderProps) {
                                     👑
                                 </span>
                                 <span className="font-semibold text-gray-700">
-                                    Lvl {dashboard.current_level}
+                                    Lvl {stats.current_level}
                                 </span>
                             </div>
 
                             {/* Daily Progress Ring */}
                             <div
                                 className="hidden sm:flex items-center cursor-pointer hover:opacity-80 transition-opacity"
-                                title={`${dashboard.today_minutes}/${dashboard.daily_goal_minutes} minutes today`}
+                                title={`${stats.today_minutes}/${stats.daily_goal_minutes} minutes today`}
                             >
                                 <div className="relative w-10 h-10">
                                     {/* Background circle */}
@@ -188,7 +185,7 @@ export default function Header({ showStats = true }: HeaderProps) {
                                     {/* Text in center */}
                                     <div className="absolute inset-0 flex items-center justify-center">
                                         <span className="text-[10px] font-bold text-gray-600">
-                                            {dashboard.today_minutes}/{dashboard.daily_goal_minutes}
+                                            {stats.today_minutes}/{stats.daily_goal_minutes}
                                         </span>
                                     </div>
                                 </div>

@@ -97,6 +97,12 @@ class LearningProfile(models.Model):
     onboarding_completed = models.BooleanField(default=False)
     onboarding_step = models.PositiveIntegerField(default=0)
     
+    # Timezone for correct streak calculation
+    timezone = models.CharField(max_length=50, default='America/Mexico_City')
+    
+    # Last activity date (DATE not DATETIME - for streak logic)
+    last_activity_date = models.DateField(null=True, blank=True)
+    
     # 🆕 Recommendation Algorithm fields
     cefr_level = models.CharField(
         max_length=2, 

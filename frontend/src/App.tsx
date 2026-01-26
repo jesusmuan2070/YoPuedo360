@@ -4,6 +4,7 @@
 
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
+import { StatsProvider } from './context/StatsContext';
 import LandingPage from './pages/LandingPage';
 import OnboardingPage from './pages/OnboardingPage';
 import LoginPage from './pages/LoginPage';
@@ -18,33 +19,34 @@ import './index.css';
 function App() {
   return (
     <AuthProvider>
-      <Router>
-        <Routes>
-          {/* Landing */}
-          <Route path="/" element={<LandingPage />} />
+      <StatsProvider>
+        <Router>
+          <Routes>
+            {/* Landing */}
+            <Route path="/" element={<LandingPage />} />
 
-          {/* Onboarding Flow */}
-          <Route path="/onboarding" element={<OnboardingPage />} />
+            {/* Onboarding Flow */}
+            <Route path="/onboarding" element={<OnboardingPage />} />
 
-          {/* Auth */}
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
+            {/* Auth */}
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/register" element={<RegisterPage />} />
 
-          {/* Mascot Selection (after signup) */}
-          <Route path="/select-mascot" element={<MascotSelectPage />} />
+            {/* Mascot Selection (after signup) */}
+            <Route path="/select-mascot" element={<MascotSelectPage />} />
 
-          {/* Main Game */}
-          <Route path="/world" element={<WorldMapPage />} />
-          <Route path="/scenario/:slug" element={<ScenarioPage />} />
-          <Route path="/lesson/:milestoneId" element={<LessonPage />} />
+            {/* Main Game */}
+            <Route path="/world" element={<WorldMapPage />} />
+            <Route path="/scenario/:slug" element={<ScenarioPage />} />
+            <Route path="/lesson/:milestoneId" element={<LessonPage />} />
 
-          {/* Catch all */}
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </Router>
+            {/* Catch all */}
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </Router>
+      </StatsProvider>
     </AuthProvider>
   );
 }
 
 export default App;
-
