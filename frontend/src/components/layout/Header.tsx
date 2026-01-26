@@ -3,11 +3,10 @@
  * Main navigation header with logo, nav links, and stats bar
  */
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { usersAPI } from '../../services/api';
 import { useStats } from '../../context/StatsContext';
-import type { User } from '../../types';
+import { useAuth } from '../../context/AuthContext';
 import LanguageDropdown from './LanguageDropdown';
 
 interface HeaderProps {
@@ -17,27 +16,12 @@ interface HeaderProps {
 
 export default function Header({ showStats = true }: HeaderProps) {
     const location = useLocation();
-    const { stats, loading: statsLoading } = useStats();
-    const [user, setUser] = useState<User | null>(null);
-    const [loading, setLoading] = useState(true);
+    const { stats } = useStats();
+    const { user, logout } = useAuth();
+    const [isProfileOpen, setIsProfileOpen] = useState(false);
     const [activeCourses, setActiveCourses] = useState<string[]>([]);
 
-    useEffect(() => {
-        if (showStats) {
-            loadUserData();
-        }
-    }, [showStats]);
 
-    const loadUserData = async () => {
-        try {
-            const userRes = await usersAPI.getMe();
-            setUser(userRes.data);
-        } catch (error) {
-            console.error('Failed to load user data:', error);
-        } finally {
-            setLoading(false);
-        }
-    };
 
     const isActive = (path: string) => location.pathname === path;
 
@@ -86,7 +70,7 @@ export default function Header({ showStats = true }: HeaderProps) {
                     </div>
 
                     {/* Right side: Stats */}
-                    {showStats && !loading && stats && (
+                    {showStats && user && stats && (
                         <div className="flex items-center gap-4 md:gap-6">
                             {/* Language Dropdown */}
                             <LanguageDropdown
@@ -191,21 +175,65 @@ export default function Header({ showStats = true }: HeaderProps) {
                                 </div>
                             </div>
 
-                            {/* Profile Avatar */}
-                            <Link
-                                to="/profile"
-                                className="w-9 h-9 rounded-full bg-gradient-to-br from-[#667eea] to-[#764ba2] flex items-center justify-center text-white font-semibold text-sm hover:opacity-90 transition-opacity overflow-hidden"
-                            >
-                                {user?.avatar_url ? (
-                                    <img
-                                        src={user.avatar_url}
-                                        alt="Profile"
-                                        className="w-full h-full object-cover"
-                                    />
-                                ) : (
-                                    user?.username?.charAt(0).toUpperCase() || 'U'
+                            {/* Profile Dropdown */}
+                            <div className="relative">
+                                <button
+                                    onClick={() => setIsProfileOpen(!isProfileOpen)}
+                                    className="w-9 h-9 rounded-full bg-gradient-to-br from-[#667eea] to-[#764ba2] flex items-center justify-center text-white font-semibold text-sm hover:opacity-90 transition-opacity overflow-hidden ring-2 ring-offset-2 ring-transparent hover:ring-[#667eea] focus:outline-none"
+                                >
+                                    {user?.avatar_url ? (
+                                        <img
+                                            src={user.avatar_url}
+                                            alt="Profile"
+                                            className="w-full h-full object-cover"
+                                        />
+                                    ) : (
+                                        user?.username?.charAt(0).toUpperCase() || 'U'
+                                    )}
+                                </button>
+
+                                {/* Dropdown Menu */}
+                                {isProfileOpen && (
+                                    <div className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-lg py-2 z-50 ring-1 ring-black ring-opacity-5 transform origin-top-right transition-all duration-200">
+                                        <Link
+                                            to="/profile"
+                                            className="px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-3 transition-colors"
+                                            onClick={() => setIsProfileOpen(false)}
+                                        >
+                                            <span className="text-lg">👤</span>
+                                            My profile
+                                        </Link>
+                                        <Link
+                                            to="/settings"
+                                            className="px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-3 transition-colors"
+                                            onClick={() => setIsProfileOpen(false)}
+                                        >
+                                            <span className="text-lg">⚙️</span>
+                                            Settings
+                                        </Link>
+                                        <button
+                                            className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-3 transition-colors"
+                                            onClick={() => setIsProfileOpen(false)}
+                                        >
+                                            <span className="text-lg">👥</span>
+                                            Invite friends
+                                        </button>
+
+                                        <div className="border-t border-gray-100 my-1"></div>
+
+                                        <button
+                                            onClick={() => {
+                                                setIsProfileOpen(false);
+                                                logout();
+                                            }}
+                                            className="w-full text-left px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 flex items-center gap-3 transition-colors"
+                                        >
+                                            <span className="text-lg">🚪</span>
+                                            Logout
+                                        </button>
+                                    </div>
                                 )}
-                            </Link>
+                            </div>
                         </div>
                     )}
 

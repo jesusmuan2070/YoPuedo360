@@ -7,6 +7,7 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { usersAPI } from '../services/api';
+import { useAuth } from './AuthContext';
 
 interface Stats {
     streak_days: number;
@@ -38,13 +39,19 @@ const defaultStats: Stats = {
 const StatsContext = createContext<StatsContextType | null>(null);
 
 export function StatsProvider({ children }: { children: ReactNode }) {
+    const { isAuthenticated } = useAuth();
     const [stats, setStats] = useState<Stats | null>(null);
     const [loading, setLoading] = useState(true);
 
-    // Load stats on mount
+    // Load stats when authenticated
     useEffect(() => {
-        refreshStats();
-    }, []);
+        if (isAuthenticated) {
+            refreshStats();
+        } else {
+            setStats(null);
+            setLoading(false);
+        }
+    }, [isAuthenticated]);
 
     const refreshStats = async () => {
         try {

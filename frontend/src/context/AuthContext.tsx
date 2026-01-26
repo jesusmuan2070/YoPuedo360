@@ -2,13 +2,23 @@
  * Auth Context - Manages authentication state
  */
 
-import { createContext, useContext, useState, useEffect } from 'react';
-import { authAPI } from '../services/api';
+import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { authAPI, usersAPI } from '../services/api';
+import type { User } from '../types';
 
-const AuthContext = createContext(null);
+interface AuthContextType {
+    user: User | null;
+    loading: boolean;
+    isAuthenticated: boolean;
+    register: (email: string, username: string, password: string) => Promise<{ success: boolean; data?: any; error?: any }>;
+    login: (username: string, password: string) => Promise<{ success: boolean; error?: any }>;
+    logout: () => void;
+}
 
-export function AuthProvider({ children }) {
-    const [user, setUser] = useState(null);
+const AuthContext = createContext<AuthContextType | null>(null);
+
+export function AuthProvider({ children }: { children: ReactNode }) {
+    const [user, setUser] = useState<User | null>(null);
     const [loading, setLoading] = useState(true);
     const [isAuthenticated, setIsAuthenticated] = useState(false);
 
@@ -17,18 +27,34 @@ export function AuthProvider({ children }) {
         const token = localStorage.getItem('access_token');
         if (token) {
             setIsAuthenticated(true);
-            // TODO: Fetch user profile
+            loadUser();
+        } else {
+            setLoading(false);
         }
-        setLoading(false);
     }, []);
 
-    const register = async (email, username, password) => {
+    const loadUser = async () => {
+        try {
+            const response = await usersAPI.getMe();
+            setUser(response.data);
+        } catch (error) {
+            console.error('Failed to load user:', error);
+            // If fetching user fails, we might still be authenticated (e.g. valid token but API error),
+            // or the token might be invalid.
+            // For now, if we can't get the user, we assume the token is bad? 
+            // Or just leave user as null but isAuthenticated true?
+            // Let's rely on the API interceptor to handle 401s and logout.
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const register = async (email: string, username: string, password: string) => {
         try {
             const response = await authAPI.register({
                 email,
                 username,
                 password,
-                password_confirm: password,
             });
 
             const { user: userData, tokens } = response.data;
@@ -40,7 +66,7 @@ export function AuthProvider({ children }) {
             setIsAuthenticated(true);
 
             return { success: true, data: response.data };
-        } catch (error) {
+        } catch (error: any) {
             return {
                 success: false,
                 error: error.response?.data || { message: 'Registration failed' }
@@ -48,7 +74,7 @@ export function AuthProvider({ children }) {
         }
     };
 
-    const login = async (username, password) => {
+    const login = async (username: string, password: string) => {
         try {
             const response = await authAPI.login({ username, password });
 
@@ -58,9 +84,10 @@ export function AuthProvider({ children }) {
             localStorage.setItem('refresh_token', refresh);
 
             setIsAuthenticated(true);
+            await loadUser();
 
             return { success: true };
-        } catch (error) {
+        } catch (error: any) {
             return {
                 success: false,
                 error: error.response?.data || { message: 'Login failed' }

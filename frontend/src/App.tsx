@@ -13,7 +13,10 @@ import MascotSelectPage from './pages/MascotSelectPage';
 import WorldMapPage from './pages/WorldMapPage';
 import ScenarioPage from './pages/ScenarioPage';
 import LessonPage from './pages/LessonPage';
+import ProfilePage from './pages/ProfilePage';
+import ChatsPage from './pages/ChatsPage';
 import MascotBuddy from './components/game/MascotBuddy';
+import ProtectedRoute from './components/layout/ProtectedRoute';
 import './index.css';
 
 function App() {
@@ -33,12 +36,42 @@ function App() {
             <Route path="/register" element={<RegisterPage />} />
 
             {/* Mascot Selection (after signup) */}
-            <Route path="/select-mascot" element={<MascotSelectPage />} />
+            <Route path="/select-mascot" element={
+              <ProtectedRoute>
+                <MascotSelectPage />
+              </ProtectedRoute>
+            } />
+
+            {/* Profile */}
+            <Route path="/profile" element={
+              <ProtectedRoute>
+                <ProfilePage />
+              </ProtectedRoute>
+            } />
+
+            {/* Chats */}
+            <Route path="/chats" element={
+              <ProtectedRoute>
+                <ChatsPage />
+              </ProtectedRoute>
+            } />
 
             {/* Main Game */}
-            <Route path="/world" element={<WorldMapPage />} />
-            <Route path="/scenario/:slug" element={<ScenarioPage />} />
-            <Route path="/lesson/:milestoneId" element={<LessonPage />} />
+            <Route path="/world" element={
+              <ProtectedRoute>
+                <WorldMapPage />
+              </ProtectedRoute>
+            } />
+            <Route path="/scenario/:slug" element={
+              <ProtectedRoute>
+                <ScenarioPage />
+              </ProtectedRoute>
+            } />
+            <Route path="/lesson/:milestoneId" element={
+              <ProtectedRoute>
+                <LessonPage />
+              </ProtectedRoute>
+            } />
 
             {/* Catch all */}
             <Route path="*" element={<Navigate to="/" replace />} />
