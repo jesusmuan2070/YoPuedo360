@@ -1,6 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Send, MoreVertical, Copy, Check, MessageSquare, Volume2, Languages, Plus, Search, Trash2 } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 import Header from '../components/layout/Header';
+import type { User } from '../types';
 
 // ============= INTERFACES - Lo que tu backend debe retornar =============
 interface Message {
@@ -184,57 +186,23 @@ class ChatService {
 // Props opcionales para configuración avanzada
 interface LanguageChatAppProps {
     apiUrl?: string;
-    // Puedes agregar props opcionales para override si lo necesitas
-    overrideUserId?: string;
-    overrideTargetLanguage?: string;
-    overrideUserLanguage?: string;
 }
-
-// IMPORTANTE: Este hook debe coincidir con tu AuthContext
-// Ajusta según tu implementación real
-interface User {
-    id: number | string;
-    learning_profile?: {
-        target_language?: string;
-        native_language?: string;
-        current_level?: string;
-    };
-}
-
-// Mock del hook - REEMPLAZAR con tu useAuth real
-const useAuth = () => {
-    // TODO: Importar tu useAuth real desde './context/AuthContext'
-    // import { useAuth } from '../../context/AuthContext';
-
-    // Mock data para desarrollo
-    return {
-        user: {
-            id: 1,
-            learning_profile: {
-                target_language: 'en',
-                native_language: 'es',
-                current_level: 'A2'
-            }
-        } as User
-    };
-};
 
 const LanguageChatApp: React.FC<LanguageChatAppProps> = ({
     apiUrl = '/api',
-    overrideUserId,
-    overrideTargetLanguage,
-    overrideUserLanguage
 }) => {
     // Obtener usuario del contexto
-    const { user } = useAuth();
+    const { user, loading, isAuthenticated } = useAuth();
 
     // Derivar configuración del usuario o usar defaults/overrides
-    const userId = overrideUserId || (user?.id ? String(user.id) : null);
-    const targetLanguage = overrideTargetLanguage || user?.learning_profile?.target_language || 'en';
-    const userLanguage = overrideUserLanguage || user?.learning_profile?.native_language || 'es';
-    const userLevel = user?.learning_profile?.current_level || 'A2';
+    const userId = user?.id ? String(user.id) : null;
+    const targetLanguage = user?.learning_profile?.target_language;
+    const userLanguage = user?.learning_profile?.native_language;
+    const userLevel = user?.learning_profile?.cefr_level;
 
-    const [chatService] = useState(() => new ChatService(apiUrl));
+    const chatServiceRef = useRef(new ChatService(apiUrl));
+    const chatService = chatServiceRef.current;
+
     const [aiFriends, setAIFriends] = useState<AIFriend[]>([]);
     const [selectedFriend, setSelectedFriend] = useState<AIFriend | null>(null);
     const [messages, setMessages] = useState<Message[]>([]);
@@ -248,13 +216,10 @@ const LanguageChatApp: React.FC<LanguageChatAppProps> = ({
 
     // Cargar amigos IA cuando el usuario esté disponible
     useEffect(() => {
-        if (user && userId) {
+        if (!loading && isAuthenticated && userId) {
             loadAIFriends();
-        } else {
-            setError('No se pudo obtener la información del usuario');
-            setIsLoading(false);
         }
-    }, [user?.id]); // Dependencia en user.id para recargar si cambia
+    }, [loading, isAuthenticated, userId]);
 
     // Cargar mensajes cuando se selecciona un amigo
     useEffect(() => {
@@ -509,7 +474,7 @@ const LanguageChatApp: React.FC<LanguageChatAppProps> = ({
                                                     e.stopPropagation();
                                                     setActiveSidebarMenu(activeSidebarMenu === friend.id ? null : friend.id);
                                                 }}
-                                                className={`p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition ${activeSidebarMenu === friend.id ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}
+                                                className={`more-button p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition ${activeSidebarMenu === friend.id ? 'opacity-100' : 'opacity-30 group-hover:opacity-100'}`}
                                             >
                                                 <MoreVertical className="w-4 h-4" />
                                             </button>
